@@ -147,29 +147,21 @@ SITE_HTML = r"""<!DOCTYPE html>
       align-items: center;
       margin-bottom: 0.85rem;
     }
-    .filters button {
+    .favourites-wrap { display: none; }
+    .favourites-wrap.visible { display: block; }
+    #favourites-btn {
       font: inherit;
       font-size: 0.875rem;
-      padding: 0.4rem 0.75rem;
-      border: 1px solid var(--border);
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--veg);
       border-radius: 8px;
       background: var(--card);
+      color: var(--veg);
       cursor: pointer;
-      color: var(--text);
     }
-    .filters button[aria-pressed="true"] {
-      background: var(--text);
-      color: #fff;
-      border-color: var(--text);
-    }
-    .frequent-buy-wrap {
-      display: none;
-      align-items: center;
-    }
-    .frequent-buy-wrap.visible { display: flex; }
-    .frequent-buy-wrap .filters button[aria-pressed="true"] {
+    #favourites-btn[aria-pressed="true"] {
       background: var(--veg);
-      border-color: var(--veg);
       color: #fff;
     }
     #search {
@@ -202,32 +194,107 @@ SITE_HTML = r"""<!DOCTYPE html>
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--muted);
-      cursor: pointer;
-      user-select: none;
+      vertical-align: top;
     }
-    th:hover { background: #f1f5f9; }
-    th .sort::after { content: " \2195"; opacity: 0.35; font-size: 0.75em; }
-    th[data-sort-dir="asc"] .sort::after { content: " \2191"; opacity: 1; color: var(--text); }
-    th[data-sort-dir="desc"] .sort::after { content: " \2193"; opacity: 1; color: var(--text); }
+    th.th-sortable { cursor: pointer; user-select: none; }
+    th.th-sortable:hover { background: #f1f5f9; }
+    th.th-has-filter {
+      white-space: nowrap;
+    }
+    th.th-has-filter.th-sortable { cursor: pointer; user-select: none; }
+    th.th-has-filter.th-sortable:hover { background: #f1f5f9; }
+    th.th-has-filter .th-sort { flex-shrink: 0; }
+    th.th-has-filter[data-key="supermarket"] { min-width: 9.5rem; }
+    th.th-has-filter[data-key="active"] { min-width: 8.5rem; }
+    .th-head {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: nowrap;
+      min-height: 1.875rem;
+    }
+    .col-filter-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+    .th-sort {
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+    }
+    .th-sort .sort::after { content: " \2195"; opacity: 0.35; font-size: 0.75em; }
+    th[data-sort-dir="asc"] .th-sort .sort::after,
+    th.th-sortable[data-sort-dir="asc"] .th-sort .sort::after { content: " \2191"; opacity: 1; color: var(--text); }
+    th[data-sort-dir="desc"] .th-sort .sort::after,
+    th.th-sortable[data-sort-dir="desc"] .th-sort .sort::after { content: " \2193"; opacity: 1; color: var(--text); }
+    .col-filter {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.25;
+      text-transform: none;
+      letter-spacing: normal;
+      padding: 0.35rem 1.65rem 0.35rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background-color: var(--card);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235c6570' stroke='%235c6570' stroke-width='0.5' d='M2.5 4.5 6 8 9.5 4.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.55rem center;
+      background-size: 0.7rem;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+    }
+    .col-filter:hover {
+      border-color: #b8c4d0;
+      background-color: #fff;
+    }
+    .col-filter:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+    }
+    .col-filter.is-active {
+      border-color: #94a3b8;
+      background-color: #f8fafc;
+      color: var(--text);
+    }
+    .col-filter.is-active:not(:focus) {
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+    }
     tr:last-child td { border-bottom: none; }
     tbody tr.row-lidl td {
-      background: #e8f1fa;
-      border-bottom-color: #c5d9ef;
+      background: #fffbeb;
+      border-bottom-color: #fde68a;
     }
-    tbody tr.row-lidl td:first-child { box-shadow: inset 4px 0 0 #e30613; }
-    tbody tr.row-lidl:hover td { background: #dce9f7; }
+    tbody tr.row-lidl td:first-child { box-shadow: inset 4px 0 0 #ea580c; }
     tbody tr.row-aldi td {
-      background: #fff6e8;
-      border-bottom-color: #f0dcc4;
+      background: #eff6ff;
+      border-bottom-color: #bfdbfe;
     }
-    tbody tr.row-aldi td:first-child { box-shadow: inset 4px 0 0 #f37d2f; }
-    tbody tr.row-aldi:hover td { background: #ffefd9; }
+    tbody tr.row-aldi td:first-child { box-shadow: inset 4px 0 0 #00529f; }
     tbody tr.row-tesco td {
-      background: #fdebec;
-      border-bottom-color: #f5c4c9;
+      background: #fef2f2;
+      border-bottom-color: #fecaca;
     }
-    tbody tr.row-tesco td:first-child { box-shadow: inset 4px 0 0 #00539f; }
-    tbody tr.row-tesco:hover td { background: #fbdfe3; }
+    tbody tr.row-tesco td:first-child { box-shadow: inset 4px 0 0 #ee1c2e; }
     tbody tr.row-default td { background: #fafbfc; }
     .store {
       display: inline-block;
@@ -243,6 +310,16 @@ SITE_HTML = r"""<!DOCTYPE html>
     .store.default { background: #475569; color: #fff; }
     .price { font-weight: 600; font-variant-numeric: tabular-nums; }
     .product-name { font-weight: 500; }
+    .product-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .product-emoji {
+      font-size: 1.2rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
     .badge {
       display: inline-block;
       padding: 0.25rem 0.6rem;
@@ -298,17 +375,10 @@ git push</pre>
     </div>
 
     <div class="toolbar">
-      <div class="filters" role="group" aria-label="Filter by status">
-        <button type="button" data-filter="all" aria-pressed="true">All</button>
-        <button type="button" data-filter="active" aria-pressed="false">Live</button>
-        <button type="button" data-filter="inactive" aria-pressed="false">Upcoming</button>
-      </div>
-      <div class="frequent-buy-wrap visible" id="frequent-buy-wrap" role="group" aria-label="Frequent buys">
-        <div class="filters">
-          <button type="button" id="frequent-buy-btn" aria-pressed="false">Frequent buys</button>
-        </div>
-      </div>
       <input id="search" type="search" placeholder="Search in this tab…" autocomplete="off" />
+      <div class="favourites-wrap visible" id="favourites-wrap">
+        <button type="button" id="favourites-btn" aria-pressed="false">Favourites</button>
+      </div>
       <span class="count" id="count"></span>
     </div>
 
@@ -316,13 +386,46 @@ git push</pre>
       <table id="promo-table">
         <thead>
           <tr>
-            <th data-key="supermarket">Store<span class="sort"></span></th>
-            <th data-key="product">Product<span class="sort"></span></th>
-            <th data-key="quantity">Qty<span class="sort"></span></th>
-            <th data-key="price">Price<span class="sort"></span></th>
-            <th data-key="from">From<span class="sort"></span></th>
-            <th data-key="until">To<span class="sort"></span></th>
-            <th data-key="active">Status<span class="sort"></span></th>
+            <th class="th-has-filter th-sortable" data-key="supermarket">
+              <div class="th-head">
+                <button type="button" class="th-sort" data-sort-key="supermarket">Store<span class="sort"></span></button>
+                <div class="col-filter-wrap">
+                  <select class="col-filter" id="filter-store" aria-label="Filter by store">
+                    <option value="all">All</option>
+                    <option value="Lidl">Lidl</option>
+                    <option value="Aldi">Aldi</option>
+                    <option value="Tesco">Tesco</option>
+                  </select>
+                </div>
+              </div>
+            </th>
+            <th class="th-sortable" data-key="product">
+              <div class="th-head"><button type="button" class="th-sort" data-sort-key="product">Product<span class="sort"></span></button></div>
+            </th>
+            <th class="th-sortable" data-key="quantity">
+              <div class="th-head"><button type="button" class="th-sort" data-sort-key="quantity">Qty<span class="sort"></span></button></div>
+            </th>
+            <th class="th-sortable" data-key="price">
+              <div class="th-head"><button type="button" class="th-sort" data-sort-key="price">Price<span class="sort"></span></button></div>
+            </th>
+            <th class="th-sortable" data-key="from">
+              <div class="th-head"><button type="button" class="th-sort" data-sort-key="from">From<span class="sort"></span></button></div>
+            </th>
+            <th class="th-sortable" data-key="until">
+              <div class="th-head"><button type="button" class="th-sort" data-sort-key="until">To<span class="sort"></span></button></div>
+            </th>
+            <th class="th-has-filter th-sortable" data-key="active">
+              <div class="th-head">
+                <button type="button" class="th-sort" data-sort-key="active">Status<span class="sort"></span></button>
+                <div class="col-filter-wrap">
+                  <select class="col-filter" id="filter-status" aria-label="Filter by status">
+                    <option value="all">All</option>
+                    <option value="live">Live</option>
+                    <option value="upcoming">Upcoming</option>
+                  </select>
+                </div>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -334,10 +437,11 @@ git push</pre>
     let ROWS = [];
     let lastGenerated = "";
     let categoryTab = "vegetable";
+    let storeFilter = "all";
     let statusFilter = "all";
-    let frequentBuyFilter = false;
-    let frequentBuyKeywords = ["onions", "carrots", "cucumbers", "tomatoes"];
-    let sortKey = "supermarket";
+    let favouritesFilter = false;
+    let favouritesKeywords = ["onions", "carrots", "cucumbers", "tomatoes"];
+    let sortKey = "active";
     let sortDir = "asc";
 
     const tbody = document.getElementById("tbody");
@@ -346,11 +450,28 @@ git push</pre>
     const searchEl = document.getElementById("search");
     const refreshBtn = document.getElementById("refresh-btn");
     const refreshHint = document.getElementById("refresh-hint");
-    const frequentBuyWrap = document.getElementById("frequent-buy-wrap");
-    const frequentBuyBtn = document.getElementById("frequent-buy-btn");
+    const favouritesWrap = document.getElementById("favourites-wrap");
+    const favouritesBtn = document.getElementById("favourites-btn");
+    const filterStore = document.getElementById("filter-store");
+    const filterStatus = document.getElementById("filter-status");
 
     const VEG_FIRST = /\b(tomato|potato|onion|shallot|pepper|cucumber|broccoli|mushroom|radish|salad|courgette|carrot|cabbage|lettuce|spinach|leek|garlic|cauliflower|aubergine|asparagus|beans?\b|peas?\b)\b/i;
     const FRUIT = /\b(mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|grapefruit|lemon|lime|grape|melon|pineapple|peach|strawber|blueber|raspber|banana|kiwi|fig\b|apricot|nectarine|avocado|coconut|pomegranate|rhubarb)\b/i;
+    const PRODUCT_EMOJI_RULES = [
+      ["easypeelers", "🍊"], ["easypeel", "🍊"],
+      ["cherry tomato", "🍅"], ["plum tomato", "🍅"], ["salad tomato", "🍅"],
+      ["baby plum tomato", "🍅"], ["snack bite pepper", "🫑"], ["yellow pepper", "🫑"],
+      ["tomato", "🍅"], ["pepper", "🫑"],
+      ["shallot", "🧅"], ["onion", "🧅"],
+      ["cucumber", "🥒"], ["carrot", "🥕"],
+      ["baby potato", "🥔"], ["potato", "🥔"],
+      ["broccoli", "🥦"], ["mushroom", "🍄"], ["radish", "🥕"],
+      ["salad trio", "🥗"], ["salad", "🥗"],
+      ["avocado", "🥑"], ["mango", "🥭"],
+      ["orange", "🍊"], ["pear", "🍐"], ["apple", "🍎"],
+      ["strawberr", "🍓"], ["banana", "🍌"], ["grape", "🍇"],
+      ["lemon", "🍋"], ["peach", "🍑"],
+    ];
 
     function classifyProduct(name) {
       const text = name.toLowerCase();
@@ -366,6 +487,14 @@ git push</pre>
       if (s.includes("aldi")) return "aldi";
       if (s.includes("tesco")) return "tesco";
       return "";
+    }
+
+    function productEmoji(product, category) {
+      const name = product.toLowerCase();
+      for (const [key, emoji] of PRODUCT_EMOJI_RULES) {
+        if (name.includes(key)) return emoji;
+      }
+      return category === "fruit" ? "🍎" : "🥬";
     }
 
     function parseCsvLine(line) {
@@ -423,9 +552,9 @@ git push</pre>
       return { generated, rows };
     }
 
-    function matchesFrequentBuy(product) {
+    function matchesFavourites(product) {
       const name = product.toLowerCase();
-      return frequentBuyKeywords.some((kw) => {
+      return favouritesKeywords.some((kw) => {
         const k = kw.toLowerCase().trim();
         if (!k) return false;
         if (name.includes(k)) return true;
@@ -434,12 +563,12 @@ git push</pre>
       });
     }
 
-    function updateFrequentBuyToolbar() {
+    function updateFavouritesToolbar() {
       const onVeg = categoryTab === "vegetable";
-      frequentBuyWrap.classList.toggle("visible", onVeg);
+      favouritesWrap.classList.toggle("visible", onVeg);
       if (!onVeg) {
-        frequentBuyFilter = false;
-        frequentBuyBtn.setAttribute("aria-pressed", "false");
+        favouritesFilter = false;
+        favouritesBtn.setAttribute("aria-pressed", "false");
       }
     }
 
@@ -449,9 +578,14 @@ git push</pre>
         if (!res.ok) return;
         const cfg = await res.json();
         if (Array.isArray(cfg.frequentBuyKeywords) && cfg.frequentBuyKeywords.length) {
-          frequentBuyKeywords = cfg.frequentBuyKeywords;
+          favouritesKeywords = cfg.frequentBuyKeywords;
         }
       } catch (_) { /* use defaults */ }
+    }
+
+    function updateFilterSelectStyles() {
+      filterStore.classList.toggle("is-active", storeFilter !== "all");
+      filterStatus.classList.toggle("is-active", statusFilter !== "all");
     }
 
     function updateTabCounts() {
@@ -465,9 +599,10 @@ git push</pre>
       const q = searchEl.value.trim().toLowerCase();
       let visible = ROWS.filter((row) => {
         if (row.category !== categoryTab) return false;
-        if (statusFilter === "active" && !row.active) return false;
-        if (statusFilter === "inactive" && row.active) return false;
-        if (frequentBuyFilter && !matchesFrequentBuy(row.product)) return false;
+        if (storeFilter !== "all" && row.supermarket !== storeFilter) return false;
+        if (statusFilter === "live" && !row.active) return false;
+        if (statusFilter === "upcoming" && row.active) return false;
+        if (favouritesFilter && !matchesFavourites(row.product)) return false;
         if (q) {
           const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
           if (!hay.includes(q)) return false;
@@ -497,7 +632,7 @@ git push</pre>
           return `
         <tr class="${rowClass}" data-active="${row.active}" data-store="${sc}">
           <td><span class="store ${sc}">${esc(row.supermarket)}</span></td>
-          <td class="product-name">${esc(row.product)}</td>
+          <td class="product-name"><span class="product-cell"><span class="product-emoji" aria-hidden="true">${productEmoji(row.product, row.category)}</span><span>${esc(row.product)}</span></span></td>
           <td>${esc(row.quantity)}</td>
           <td class="price">${esc(row.price)}</td>
           <td>${esc(row.from)}</td>
@@ -509,9 +644,10 @@ git push</pre>
 
       const inTab = ROWS.filter((r) => r.category === categoryTab).length;
       countEl.textContent = `${visible.length} of ${inTab} in tab`;
-      document.querySelectorAll("th").forEach((th) => {
+      document.querySelectorAll("th[data-key]").forEach((th) => {
         th.dataset.sortDir = th.dataset.key === sortKey ? sortDir : "";
       });
+      updateFilterSelectStyles();
     }
 
     function esc(s) {
@@ -528,32 +664,35 @@ git push</pre>
         document.querySelectorAll(".category-tabs button").forEach((b) => {
           b.setAttribute("aria-selected", b === btn ? "true" : "false");
         });
-        updateFrequentBuyToolbar();
+        updateFavouritesToolbar();
         render();
       });
     });
 
-    frequentBuyBtn.addEventListener("click", () => {
-      frequentBuyFilter = !frequentBuyFilter;
-      frequentBuyBtn.setAttribute("aria-pressed", frequentBuyFilter ? "true" : "false");
+    favouritesBtn.addEventListener("click", () => {
+      favouritesFilter = !favouritesFilter;
+      favouritesBtn.setAttribute("aria-pressed", favouritesFilter ? "true" : "false");
       render();
     });
 
-    document.querySelectorAll(".toolbar > .filters button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        statusFilter = btn.dataset.filter;
-        document.querySelectorAll(".toolbar > .filters button").forEach((b) => {
-          b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-        });
-        render();
-      });
+    filterStore.addEventListener("change", () => {
+      storeFilter = filterStore.value;
+      updateFilterSelectStyles();
+      render();
     });
+    filterStatus.addEventListener("change", () => {
+      statusFilter = filterStatus.value;
+      updateFilterSelectStyles();
+      render();
+    });
+    filterStore.addEventListener("click", (e) => e.stopPropagation());
+    filterStatus.addEventListener("click", (e) => e.stopPropagation());
 
     searchEl.addEventListener("input", render);
 
-    document.querySelectorAll("th[data-key]").forEach((th) => {
-      th.addEventListener("click", () => {
-        const key = th.dataset.key;
+    document.querySelectorAll(".th-sort").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.sortKey;
         if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
         else { sortKey = key; sortDir = "asc"; }
         render();
@@ -576,7 +715,7 @@ git push</pre>
           ? `Generated ${generated} Europe/Dublin`
           : (rows.length ? "Promotions loaded" : "No promotions in CSV");
         updateTabCounts();
-        updateFrequentBuyToolbar();
+        updateFavouritesToolbar();
         render();
         return true;
       } catch (err) {

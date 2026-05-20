@@ -1,4 +1,4 @@
-"""Keywords for the Vegetables tab “Frequent buys” filter.
+"""Keywords for the Vegetables tab “Favourites” filter.
 
 Edit FREQUENT_BUY_KEYWORDS, then run: python3 scripts/update_promotions.py
 and push (updates site-config.json on the live site).

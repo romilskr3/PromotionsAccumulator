@@ -83,7 +83,8 @@ Each push that updates `docs/` refreshes the site. No GitHub Actions workflow is
 | Lidl | Super Savers fruit & veg (weekly) |
 | Aldi | Super 6 from leaflet spreads |
 | Tesco | Fresh 4 (Clubcard prices; needs saved session) |
-| SuperValu, Dunnes | Not implemented |
+| SuperValu | [`supervalu.ie/offers`](https://supervalu.ie/offers) + `/offers/leaflet/{id}` PDF; falls back to local cache if this week is offline ([details](leaflets/README.md#supervalu-sources)) |
+| Dunnes | Not implemented |
 
 Cached leaflets live under [`leaflets/`](leaflets/).
 

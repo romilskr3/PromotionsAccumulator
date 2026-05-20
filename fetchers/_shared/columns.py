@@ -9,6 +9,7 @@ COLUMNS = [
     "Price",
     "From Date",
     "Until Date",
+    "Status",
     "Active today",
 ]
 
@@ -17,9 +18,10 @@ CSV_EXTRA_COLUMNS = ["category", "from_sort", "until_sort"]
 
 
 def sort_key(p: Promotion) -> tuple:
+    status_order = {"live": 0, "upcoming": 1, "ended": 2}
     return (
         p.supermarket,
-        0 if p.active_today() else 1,
+        status_order.get(p.promotion_status(), 2),
         p.promotion_from,
         p.product.lower(),
     )

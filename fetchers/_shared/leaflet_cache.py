@@ -83,6 +83,46 @@ def is_stale(week_path: Path, max_age: timedelta = DEFAULT_MAX_AGE) -> bool:
         return True
 
 
+def dublin_today() -> date:
+    return datetime.now(DUBLIN).date()
+
+
+def week_promo_dates(week_path: Path) -> tuple[date, date] | None:
+    try:
+        meta = read_meta(week_path)
+        return (
+            date.fromisoformat(meta["promo_from"]),
+            date.fromisoformat(meta["promo_until"]),
+        )
+    except (KeyError, ValueError, json.JSONDecodeError, FileNotFoundError):
+        return None
+
+
+def best_cached_week_dir(store: str, *, today: date | None = None) -> Path | None:
+    """Prefer a cached week that is still valid today; else the latest promo_until."""
+    today = today or dublin_today()
+    dirs = list_week_dirs(store)
+    if not dirs:
+        return None
+
+    active: list[tuple[date, date, Path]] = []
+    dated: list[tuple[date, date, Path]] = []
+    for path in dirs:
+        bounds = week_promo_dates(path)
+        if not bounds or not (path / "leaflet.pdf").exists():
+            continue
+        promo_from, promo_until = bounds
+        dated.append((promo_until, promo_from, path))
+        if promo_from <= today <= promo_until:
+            active.append((promo_until, promo_from, path))
+
+    if active:
+        return max(active)[2]
+    if dated:
+        return max(dated)[2]
+    return dirs[-1]
+
+
 def list_week_dirs(store: str) -> list[Path]:
     store_path = LEAFLETS_ROOT / store.lower()
     if not store_path.exists():

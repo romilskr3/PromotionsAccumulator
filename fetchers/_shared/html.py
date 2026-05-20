@@ -297,6 +297,11 @@ SITE_HTML = r"""<!DOCTYPE html>
       border-bottom-color: #fecaca;
     }
     tbody tr.row-tesco td:first-child { box-shadow: inset 4px 0 0 #ee1c2e; }
+    tbody tr.row-supervalu td {
+      background: #f8d7da;
+      border-bottom-color: #e8a0a8;
+    }
+    tbody tr.row-supervalu td:first-child { box-shadow: inset 4px 0 0 #8b0000; }
     tbody tr.row-default td { background: #fafbfc; }
     .store {
       display: inline-block;
@@ -309,6 +314,7 @@ SITE_HTML = r"""<!DOCTYPE html>
     .store.lidl { background: #ffd500; color: #1a1a1a; }
     .store.aldi { background: #00529f; color: #fff; }
     .store.tesco { background: #ee1c2e; color: #fff; }
+    .store.supervalu { background: #8b0000; color: #fff; }
     .store.default { background: #475569; color: #fff; }
     .price { font-weight: 600; font-variant-numeric: tabular-nums; }
     .product-name { font-weight: 500; }
@@ -323,6 +329,7 @@ SITE_HTML = r"""<!DOCTYPE html>
     }
     .badge.live { background: #15803d; color: #fff; }
     .badge.upcoming { background: #475569; color: #fff; }
+    .badge.ended { background: #94a3b8; color: #fff; }
     .empty-row td {
       text-align: center;
       color: var(--muted);
@@ -384,6 +391,7 @@ SITE_HTML = r"""<!DOCTYPE html>
                     <option value="Lidl">Lidl</option>
                     <option value="Aldi">Aldi</option>
                     <option value="Tesco">Tesco</option>
+                    <option value="SuperValu">SuperValu</option>
                   </select>
                 </div>
               </div>
@@ -411,6 +419,7 @@ SITE_HTML = r"""<!DOCTYPE html>
                     <option value="all">All</option>
                     <option value="live">Live</option>
                     <option value="upcoming">Upcoming</option>
+                    <option value="ended">Ended</option>
                   </select>
                 </div>
               </div>
@@ -459,7 +468,38 @@ SITE_HTML = r"""<!DOCTYPE html>
       if (s.includes("lidl")) return "lidl";
       if (s.includes("aldi")) return "aldi";
       if (s.includes("tesco")) return "tesco";
+      if (s.includes("supervalu")) return "supervalu";
       return "";
+    }
+
+    function cleanProductName(name) {
+      let text = (name || "").trim();
+      const prefixes = [
+        "SuperValu Signature Tastes",
+        "SuperValu",
+        "Lidl",
+        "Aldi",
+        "Tesco",
+      ];
+      for (const prefix of prefixes) {
+        if (text.toLowerCase().startsWith(prefix.toLowerCase())) {
+          text = text.slice(prefix.length).trim();
+          break;
+        }
+      }
+      const patterns = [
+        /\s+was\s+.*$/i,
+        /\s+NOW\s+.*$/i,
+        /\s+Save\s+\d+%.*$/i,
+        /\s*\(Details In-store.*$/i,
+        /\s*-\s*€[\d.,]+\/kg\s*$/i,
+        /\s*\d+pce\s*$/i,
+        /\s*\d+\s*kg\s*$/i,
+        /\s*\d+\s*g\s*$/i,
+        /\s+Tray\s*$/i,
+      ];
+      for (const re of patterns) text = text.replace(re, "").trim();
+      return text;
     }
 
     function parseGeneratedInstant(raw) {
@@ -503,6 +543,24 @@ SITE_HTML = r"""<!DOCTYPE html>
       return fields;
     }
 
+    function dublinTodayIso() {
+      return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Dublin" });
+    }
+
+    function rowStatus(row) {
+      const statusCol = (row.statusCol ?? "").toLowerCase();
+      if (statusCol === "live" || statusCol === "upcoming" || statusCol === "ended") {
+        return statusCol;
+      }
+      const today = dublinTodayIso();
+      if (row.from_sort && row.until_sort) {
+        if (today >= row.from_sort && today <= row.until_sort) return "live";
+        if (today < row.from_sort) return "upcoming";
+        return "ended";
+      }
+      return row.active ? "live" : "ended";
+    }
+
     function csvToRows(text) {
       let generated = "";
       const trimmed = text.replace(/^\uFEFF/, "");
@@ -533,6 +591,7 @@ SITE_HTML = r"""<!DOCTYPE html>
           from_sort: rec["from_sort"] ?? "",
           until_sort: rec["until_sort"] ?? "",
           active: (rec["Active today"] ?? "").toLowerCase() === "true",
+          statusCol: (rec["Status"] ?? "").toLowerCase(),
           category,
         };
       });
@@ -587,8 +646,10 @@ SITE_HTML = r"""<!DOCTYPE html>
       let visible = ROWS.filter((row) => {
         if (row.category !== categoryTab) return false;
         if (storeFilter !== "all" && row.supermarket !== storeFilter) return false;
-        if (statusFilter === "live" && !row.active) return false;
-        if (statusFilter === "upcoming" && row.active) return false;
+        const status = rowStatus(row);
+        if (statusFilter === "live" && status !== "live") return false;
+        if (statusFilter === "upcoming" && status !== "upcoming") return false;
+        if (statusFilter === "ended" && status !== "ended") return false;
         if (favouritesFilter && !matchesFavourites(row.product)) return false;
         if (q) {
           const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
@@ -602,7 +663,10 @@ SITE_HTML = r"""<!DOCTYPE html>
         if (sortKey === "from") { av = a.from_sort; bv = b.from_sort; }
         if (sortKey === "until") { av = a.until_sort; bv = b.until_sort; }
         let cmp;
-        if (sortKey === "active") cmp = (a.active === b.active) ? 0 : a.active ? -1 : 1;
+        if (sortKey === "active") {
+          const order = { live: 0, upcoming: 1, ended: 2 };
+          cmp = order[rowStatus(a)] - order[rowStatus(b)];
+        }
         else cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
         return sortDir === "asc" ? cmp : -cmp;
       });
@@ -614,12 +678,13 @@ SITE_HTML = r"""<!DOCTYPE html>
         tbody.innerHTML = visible.map((row) => {
           const sc = storeClass(row.supermarket) || "default";
           const rowClass = sc === "default" ? "row-default" : `row-${sc}`;
-          const statusClass = row.active ? "live" : "upcoming";
-          const statusLabel = row.active ? "LIVE" : "UPCOMING";
+          const status = rowStatus(row);
+          const statusClass = status;
+          const statusLabel = status.toUpperCase();
           return `
         <tr class="${rowClass}" data-active="${row.active}" data-store="${sc}">
           <td><span class="store ${sc}">${esc(row.supermarket)}</span></td>
-          <td class="product-name">${esc(row.product)}</td>
+          <td class="product-name">${esc(cleanProductName(row.product))}</td>
           <td>${esc(row.quantity)}</td>
           <td class="price">${esc(row.price)}</td>
           <td>${esc(row.from)}</td>

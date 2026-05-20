@@ -19,6 +19,7 @@ def promotion_row(p: Promotion) -> dict[str, str]:
         "Price": p.format_price(p.promotional_price),
         "From Date": p.promotion_from.strftime("%d/%m"),
         "Until Date": p.promotion_until.strftime("%d/%m"),
+        "Status": p.promotion_status().capitalize(),
         "Active today": "True" if p.active_today() else "False",
         "category": produce_type(p.product),
         "from_sort": p.promotion_from.isoformat(),

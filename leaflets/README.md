@@ -27,3 +27,15 @@ leaflets/
 python scripts/update_promotions.py              # download + parse
 python scripts/update_promotions.py --skip-download  # parse cache only
 ```
+
+**Caches are never auto-deleted.** Old week folders stay on disk until you remove them manually.
+
+### SuperValu sources
+
+| Step | URL |
+|------|-----|
+| Hub (preferred) | `https://supervalu.ie/offers` |
+| Per-cycle manifest | `https://supervalu.ie/offers/leaflet/{id}` (e.g. `608`) |
+| PDF | `https://supervalu.ie/image/var/files/pdf2web/{filename}` |
+
+If this week’s leaflet is not on the site yet (or the hub only shows a short teaser), download falls back to the best **local** cached PDF: a week that is still valid today, or else the most recent `promo_until` on disk. Archived PDFs that remain online but whose dates have ended are not written over an active cache.

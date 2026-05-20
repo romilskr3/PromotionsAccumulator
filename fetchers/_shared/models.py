@@ -20,8 +20,16 @@ class Promotion:
     quantity: str | None = None
 
     def active_today(self, today: date | None = None) -> bool:
+        return self.promotion_status(today) == "live"
+
+    def promotion_status(self, today: date | None = None) -> str:
+        """One of live, upcoming, ended (Europe/Dublin calendar day)."""
         today = today or datetime.now(DUBLIN).date()
-        return self.promotion_from <= today <= self.promotion_until
+        if self.promotion_from <= today <= self.promotion_until:
+            return "live"
+        if today < self.promotion_from:
+            return "upcoming"
+        return "ended"
 
     def format_price(self, value: str | None) -> str:
         if value is None or value == "":

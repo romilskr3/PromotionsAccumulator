@@ -3,12 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 INDEX_HTML_PATH = Path(__file__).resolve().parents[2] / "output" / "index.html"
+FAVICON_PATH = Path(__file__).resolve().parent / "favicon.svg"
 
 SITE_HTML = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <title>Who should we buy from?</title>
   <style>
     :root {
@@ -460,6 +462,28 @@ SITE_HTML = r"""<!DOCTYPE html>
       return "";
     }
 
+    function parseGeneratedInstant(raw) {
+      const s = raw.replace(/\s+Europe\/Dublin\s*$/i, "").trim();
+      const legacy = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})$/.exec(s);
+      if (legacy) return new Date(`${legacy[1]}T${legacy[2]}:00+01:00`);
+      const iso = s.includes("T") ? s : s.replace(" ", "T");
+      const d = new Date(iso);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatGeneratedLabel(raw) {
+      const d = parseGeneratedInstant(raw);
+      if (!d) return "";
+      return "Updated " + d.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
     function parseCsvLine(line) {
       const fields = [];
       let field = "";
@@ -674,9 +698,9 @@ SITE_HTML = r"""<!DOCTYPE html>
         ROWS = rows;
         if (generated) lastGenerated = generated;
         metaEl.classList.remove("error");
-        metaEl.textContent = generated
-          ? `Generated ${generated} Europe/Dublin`
-          : (rows.length ? "Promotions loaded" : "No promotions in CSV");
+        const generatedLabel = formatGeneratedLabel(generated);
+        metaEl.textContent = generatedLabel
+          || (rows.length ? "Promotions loaded" : "No promotions in CSV");
         updateTabCounts();
         updateFavouritesToolbar();
         render();

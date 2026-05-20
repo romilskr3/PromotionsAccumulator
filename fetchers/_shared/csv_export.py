@@ -31,12 +31,12 @@ def write_promotions_csv(
 ) -> Path:
     path = path or CSV_OUTPUT_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
-    generated = datetime.now(DUBLIN).strftime("%Y-%m-%d %H:%M")
+    generated = datetime.now(DUBLIN).isoformat(timespec="minutes")
     fieldnames = COLUMNS + CSV_EXTRA_COLUMNS
     sorted_promos = sorted(promotions, key=sort_key)
 
     with path.open("w", encoding="utf-8", newline="") as f:
-        f.write(f"# Generated: {generated} Europe/Dublin\n")
+        f.write(f"# Generated: {generated}\n")
         writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for p in sorted_promos:

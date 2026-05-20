@@ -56,10 +56,12 @@ One-time setup on [github.com](https://github.com) (personal account):
 1. **Create a new repository** (e.g. `PromotionsAccumulator`). Public or private both work with Pages.
 2. **Push this project** to that repo (`main` branch).
 3. **Enable Pages:** repo → **Settings** → **Pages** → **Build and deployment**
-   - **Source:** GitHub Actions  
-   (Workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) deploys `docs/`, mirrored from `output/` on each update.)
 
-   **Fallback:** Deploy from branch `main` → `/docs` if you prefer not to use Actions.
+   **Recommended if Actions fail** (e.g. billing lock): **Deploy from a branch** → `main` → **`/docs`**.  
+   No workflow required; GitHub serves `docs/index.html` and `docs/promotions.csv` directly.
+
+   **Optional:** **GitHub Actions** → workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) deploys `docs/` after each push. Requires Actions to run on your account ([Billing settings](https://github.com/settings/billing)).
+
 4. After deploy (usually 1–2 minutes), your site is live at:
 
    **`https://<your-github-username>.github.io/<repository-name>/`**
@@ -77,7 +79,13 @@ git commit -m "Update promotions"
 git push
 ```
 
-Pages rebuilds when `docs/` changes on `main`.
+Pages rebuilds when `docs/` changes on `main` (branch deploy), or when the deploy workflow succeeds (Actions).
+
+### Actions still show “billing issue”?
+
+That message means GitHub is **not starting any job** on hosted runners — renaming or recreating the workflow does not fix it. Check [github.com/settings/billing](https://github.com/settings/billing) (payment method, overdue invoices, spending limits). After billing is truly cleared, use **Actions → Deploy site to GitHub Pages → Re-run all jobs**, or push any commit to `main`.
+
+Until then, use **branch deploy** (`main` / `docs`) — your site files are already in the repo.
 
 ### View locally (no GitHub)
 

@@ -3,9 +3,6 @@ __pycache__/
 .venv/
 venv/
 .env
-output/*
-!output/.gitkeep
-# docs/index.html is committed for GitHub Pages (see docs/README.md)
 leaflets/**/*
 !leaflets/README.md
 *.egg-info/

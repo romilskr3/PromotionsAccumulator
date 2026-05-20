@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Master script: run store fetchers and update output/promotions.md."""
+"""Master script: run store fetchers and update output/ (CSV + site)."""
 
 from __future__ import annotations
 
@@ -62,9 +62,8 @@ def main() -> int:
 
     outputs = write_all_outputs(promotions)
     print(f"Wrote {len(promotions)} promotion(s):")
-    print(f"  Markdown: {outputs['markdown']}")
-    print(f"  HTML:     {outputs['html']}")
-    print(f"  Pages:    {outputs['pages']}  (commit docs/ and push for GitHub Pages)")
+    print(f"  CSV:  {outputs['csv']}")
+    print(f"  Site: {outputs['index']}  (commit output/ and push for GitHub Pages)")
     return 0
 
 

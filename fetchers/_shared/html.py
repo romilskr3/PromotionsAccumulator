@@ -1,29 +1,17 @@
 from __future__ import annotations
 
-import html
-import json
-from datetime import datetime
 from pathlib import Path
 
-from fetchers._shared.markdown import COLUMNS, _sort_key
-from fetchers._shared.models import DUBLIN, Promotion
+INDEX_HTML_PATH = Path(__file__).resolve().parents[2] / "output" / "index.html"
 
-HTML_OUTPUT_PATH = Path(__file__).resolve().parents[2] / "output" / "promotions.html"
-
-
-def render_promotions_html(promotions: list[Promotion]) -> str:
-    now = datetime.now(DUBLIN).strftime("%Y-%m-%d %H:%M")
-    rows = [_promotion_row(p) for p in sorted(promotions, key=_sort_key)]
-    data_json = json.dumps(rows, ensure_ascii=False)
-
-    return f"""<!DOCTYPE html>
+SITE_HTML = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fruit &amp; Vegetable Promotions — Dublin</title>
   <style>
-    :root {{
+    :root {
       --bg: #f4f6f8;
       --card: #fff;
       --text: #1a1a1a;
@@ -32,91 +20,90 @@ def render_promotions_html(promotions: list[Promotion]) -> str:
       --accent: #00539f;
       --active: #0d7a3e;
       --inactive: #9aa3ad;
-    }}
-    * {{ box-sizing: border-box; }}
-    body {{
+    }
+    * { box-sizing: border-box; }
+    body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.45;
-    }}
-    .wrap {{ max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }}
-    h1 {{ font-size: 1.5rem; margin: 0 0 0.25rem; }}
-    .meta {{ color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }}
-    .toolbar {{
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .meta.error { color: #b42318; }
+    .toolbar {
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem;
       align-items: center;
       margin-bottom: 1rem;
-    }}
-    .filters {{ display: flex; gap: 0.5rem; flex-wrap: wrap; }}
-    .filters button {{
+    }
+    .filters button {
+      font: inherit;
+      padding: 0.45rem 0.85rem;
       border: 1px solid var(--border);
+      border-radius: 8px;
       background: var(--card);
-      padding: 0.4rem 0.85rem;
-      border-radius: 999px;
       cursor: pointer;
-      font-size: 0.9rem;
-    }}
-    .filters button[aria-pressed="true"] {{
+      color: var(--text);
+    }
+    .filters button[aria-pressed="true"] {
       background: var(--accent);
-      border-color: var(--accent);
       color: #fff;
-    }}
-    #search {{
+      border-color: var(--accent);
+    }
+    #search {
       flex: 1;
       min-width: 200px;
       padding: 0.5rem 0.75rem;
       border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 0.95rem;
-    }}
-    .card {{
+      font: inherit;
+    }
+    .card {
       background: var(--card);
-      border: 1px solid var(--border);
       border-radius: 12px;
+      border: 1px solid var(--border);
       overflow: hidden;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 0.92rem; }}
-    thead {{ background: #eef2f6; }}
-    th {{
-      text-align: left;
-      padding: 0.65rem 0.75rem;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-      user-select: none;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { padding: 0.65rem 0.85rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th {
+      background: #eef2f6;
+      font-weight: 600;
       cursor: pointer;
-    }}
-    th:hover {{ background: #e2e8ef; }}
-    th .sort {{ opacity: 0.45; font-size: 0.75rem; margin-left: 0.25rem; }}
-    th[data-sort-dir="asc"] .sort::after {{ content: "▲"; opacity: 1; }}
-    th[data-sort-dir="desc"] .sort::after {{ content: "▼"; opacity: 1; }}
-    td {{ padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }}
-    tr:last-child td {{ border-bottom: none; }}
-    tr.hidden {{ display: none; }}
-    .badge {{
+      user-select: none;
+      white-space: nowrap;
+    }
+    th:hover { background: #e2e8ef; }
+    th .sort::after { content: " \\2195"; opacity: 0.35; font-size: 0.75em; }
+    th[data-sort-dir="asc"] .sort::after { content: " \\2191"; opacity: 1; }
+    th[data-sort-dir="desc"] .sort::after { content: " \\2193"; opacity: 1; }
+    tr:last-child td { border-bottom: none; }
+    tr[data-active="false"] { opacity: 0.72; }
+    .badge {
       display: inline-block;
       padding: 0.15rem 0.5rem;
       border-radius: 6px;
       font-size: 0.8rem;
       font-weight: 600;
-    }}
-    .badge.active {{ background: #d8f0e0; color: var(--active); }}
-    .badge.inactive {{ background: #eceff2; color: var(--inactive); }}
-    .count {{ color: var(--muted); font-size: 0.9rem; }}
-    @media (max-width: 720px) {{
-      .card {{ overflow-x: auto; }}
-      table {{ min-width: 720px; }}
-    }}
+    }
+    .badge.active { background: #d8f0e0; color: var(--active); }
+    .badge.inactive { background: #eceff2; color: var(--inactive); }
+    .count { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 720px) {
+      .card { overflow-x: auto; }
+      table { min-width: 720px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Fruit &amp; Vegetable Promotions — Dublin</h1>
-    <p class="meta">Generated {html.escape(now)} Europe/Dublin</p>
+    <p class="meta" id="meta">Loading promotions…</p>
     <div class="toolbar">
       <div class="filters" role="group" aria-label="Filter by active status">
         <button type="button" data-filter="all" aria-pressed="true">All</button>
@@ -144,105 +131,159 @@ def render_promotions_html(promotions: list[Promotion]) -> str:
     </div>
   </div>
   <script>
-    const ROWS = {data_json};
+    const CSV_URL = "promotions.csv";
+    let ROWS = [];
     const tbody = document.getElementById("tbody");
     const countEl = document.getElementById("count");
+    const metaEl = document.getElementById("meta");
     const searchEl = document.getElementById("search");
     let statusFilter = "all";
     let sortKey = "supermarket";
     let sortDir = "asc";
 
-    function render() {{
+    function parseCsvLine(line) {
+      const fields = [];
+      let field = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (inQuotes) {
+          if (c === '"') {
+            if (line[i + 1] === '"') { field += '"'; i++; }
+            else inQuotes = false;
+          } else field += c;
+        } else if (c === '"') inQuotes = true;
+        else if (c === ",") { fields.push(field); field = ""; }
+        else field += c;
+      }
+      fields.push(field);
+      return fields;
+    }
+
+    function csvToRows(text) {
+      let generated = "";
+      const trimmed = text.replace(/^\uFEFF/, "");
+      const lines = trimmed.split(/\r?\n/).filter((l) => l.length);
+      const dataLines = [];
+      for (const line of lines) {
+        if (line.startsWith("# Generated:")) {
+          generated = line.replace(/^# Generated:\s*/, "").trim();
+        } else dataLines.push(line);
+      }
+      const parsed = dataLines.map(parseCsvLine);
+      if (!parsed.length) return { generated, rows: [] };
+      const headers = parsed[0].map((h) => h.trim());
+      const rows = parsed.slice(1).filter((r) => r.some((c) => c.trim())).map((cells) => {
+        const rec = {};
+        headers.forEach((h, i) => { rec[h] = (cells[i] ?? "").trim(); });
+        return {
+          supermarket: rec["Supermarket"] ?? "",
+          product: rec["Product"] ?? "",
+          quantity: rec["Quantity"] ?? "",
+          price: rec["Price"] ?? "",
+          from: rec["From Date"] ?? "",
+          until: rec["Until Date"] ?? "",
+          from_sort: rec["from_sort"] ?? "",
+          until_sort: rec["until_sort"] ?? "",
+          active: (rec["Active today"] ?? "").toLowerCase() === "true",
+        };
+      });
+      return { generated, rows };
+    }
+
+    function render() {
       const q = searchEl.value.trim().toLowerCase();
-      let visible = ROWS.filter((row) => {{
+      let visible = ROWS.filter((row) => {
         if (statusFilter === "active" && !row.active) return false;
         if (statusFilter === "inactive" && row.active) return false;
-        if (q) {{
-          const hay = `${{row.supermarket}} ${{row.product}} ${{row.quantity}}`.toLowerCase();
+        if (q) {
+          const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
           if (!hay.includes(q)) return false;
-        }}
+        }
         return true;
-      }});
-      visible.sort((a, b) => {{
+      });
+      visible.sort((a, b) => {
         let av = a[sortKey] ?? "";
         let bv = b[sortKey] ?? "";
-        if (sortKey === "from") {{ av = a.from_sort; bv = b.from_sort; }}
-        if (sortKey === "until") {{ av = a.until_sort; bv = b.until_sort; }}
+        if (sortKey === "from") { av = a.from_sort; bv = b.from_sort; }
+        if (sortKey === "until") { av = a.until_sort; bv = b.until_sort; }
         let cmp;
         if (sortKey === "active") cmp = (a.active === b.active) ? 0 : a.active ? -1 : 1;
-        else cmp = String(av).localeCompare(String(bv), undefined, {{ numeric: true }});
+        else cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
         return sortDir === "asc" ? cmp : -cmp;
-      }});
+      });
       tbody.innerHTML = visible.map((row) => `
-        <tr data-active="${{row.active}}">
-          <td>${{esc(row.supermarket)}}</td>
-          <td>${{esc(row.product)}}</td>
-          <td>${{esc(row.quantity)}}</td>
-          <td>${{esc(row.price)}}</td>
-          <td>${{esc(row.from)}}</td>
-          <td>${{esc(row.until)}}</td>
-          <td><span class="badge ${{row.active ? "active" : "inactive"}}">${{row.active ? "Active" : "Inactive"}}</span></td>
+        <tr data-active="${row.active}">
+          <td>${esc(row.supermarket)}</td>
+          <td>${esc(row.product)}</td>
+          <td>${esc(row.quantity)}</td>
+          <td>${esc(row.price)}</td>
+          <td>${esc(row.from)}</td>
+          <td>${esc(row.until)}</td>
+          <td><span class="badge ${row.active ? "active" : "inactive"}">${row.active ? "Active" : "Inactive"}</span></td>
         </tr>`).join("");
-      countEl.textContent = `${{visible.length}} of ${{ROWS.length}} shown`;
-      document.querySelectorAll("th").forEach((th) => {{
+      countEl.textContent = `${visible.length} of ${ROWS.length} shown`;
+      document.querySelectorAll("th").forEach((th) => {
         th.dataset.sortDir = th.dataset.key === sortKey ? sortDir : "";
-      }});
-    }}
+      });
+    }
 
-    function esc(s) {{
+    function esc(s) {
       return String(s)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
-    }}
+    }
 
-    document.querySelectorAll(".filters button").forEach((btn) => {{
-      btn.addEventListener("click", () => {{
+    document.querySelectorAll(".filters button").forEach((btn) => {
+      btn.addEventListener("click", () => {
         statusFilter = btn.dataset.filter;
-        document.querySelectorAll(".filters button").forEach((b) => {{
+        document.querySelectorAll(".filters button").forEach((b) => {
           b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-        }});
+        });
         render();
-      }});
-    }});
+      });
+    });
 
     searchEl.addEventListener("input", render);
 
-    document.querySelectorAll("th[data-key]").forEach((th) => {{
-      th.addEventListener("click", () => {{
+    document.querySelectorAll("th[data-key]").forEach((th) => {
+      th.addEventListener("click", () => {
         const key = th.dataset.key;
         if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
-        else {{ sortKey = key; sortDir = "asc"; }}
+        else { sortKey = key; sortDir = "asc"; }
         render();
-      }});
-    }});
+      });
+    });
 
-    render();
+    async function load() {
+      try {
+        const res = await fetch(CSV_URL, { cache: "no-cache" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { generated, rows } = csvToRows(await res.text());
+        ROWS = rows;
+        metaEl.classList.remove("error");
+        metaEl.textContent = generated
+          ? `Generated ${generated}`
+          : (rows.length ? "Promotions loaded" : "No promotions in CSV");
+        render();
+      } catch (err) {
+        metaEl.classList.add("error");
+        metaEl.textContent = `Could not load ${CSV_URL}: ${err.message}. Run update_promotions.py and open via a local server (file:// blocks fetch).`;
+        countEl.textContent = "";
+      }
+    }
+
+    load();
   </script>
 </body>
 </html>
 """
 
 
-def _promotion_row(promotion: Promotion) -> dict:
-    return {
-        "supermarket": promotion.supermarket,
-        "product": promotion.product,
-        "quantity": promotion.format_quantity(),
-        "price": promotion.format_price(promotion.promotional_price),
-        "from": promotion.promotion_from.strftime("%d/%m"),
-        "until": promotion.promotion_until.strftime("%d/%m"),
-        "from_sort": promotion.promotion_from.isoformat(),
-        "until_sort": promotion.promotion_until.isoformat(),
-        "active": promotion.active_today(),
-    }
-
-
-def write_promotions_html(
-    promotions: list[Promotion], path: Path | None = None
-) -> Path:
-    path = path or HTML_OUTPUT_PATH
+def write_promotions_site(path: Path | None = None) -> Path:
+    path = path or INDEX_HTML_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_promotions_html(promotions), encoding="utf-8")
+    path.write_text(SITE_HTML, encoding="utf-8")
     return path

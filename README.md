@@ -37,13 +37,13 @@ python3 scripts/save_tesco_session.py
 python3 scripts/update_promotions.py --store tesco
 ```
 
-### Output files
+### Output files (`output/`)
 
 | File | Use |
 |------|-----|
-| `output/promotions.md` | Plain markdown (local) |
-| `output/promotions.html` | Interactive table (local) |
-| `docs/index.html` | Same interactive table — **published on GitHub Pages** |
+| `output/promotions.csv` | All promotion data (source of truth) |
+| `output/index.html` | Interactive table — loads CSV in the browser |
+| `output/.nojekyll` | Lets GitHub Pages serve the site as static files |
 
 The HTML page supports **All / Active / Not active** filters, search, and **click column headers to sort**.
 
@@ -57,7 +57,7 @@ One-time setup on [github.com](https://github.com) (personal account):
 2. **Push this project** to that repo (`main` branch).
 3. **Enable Pages:** repo → **Settings** → **Pages** → **Build and deployment**
    - **Source:** GitHub Actions  
-   (The workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) deploys the `docs/` folder.)
+   (The workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) deploys the `output/` folder.)
 4. After the first successful deploy, your site is live at:
 
    **`https://<your-github-username>.github.io/<repository-name>/`**
@@ -70,21 +70,23 @@ Whenever promotions change:
 
 ```bash
 python3 scripts/update_promotions.py
-git add docs/index.html
+git add output/
 git commit -m "Update promotions"
 git push
 ```
 
-GitHub Actions redeploys automatically when `docs/` changes.
+GitHub Actions redeploys automatically when `output/` changes.
 
 ### View locally (no GitHub)
 
-Open `output/promotions.html` in a browser, or:
+The site loads `promotions.csv` via `fetch`, which browsers block on `file://`. Use a local server:
 
 ```bash
 cd output && python3 -m http.server 8080
-# http://127.0.0.1:8080/promotions.html
+# http://127.0.0.1:8080/
 ```
+
+You can also open `output/promotions.csv` directly to inspect the data.
 
 ## Roadmap
 

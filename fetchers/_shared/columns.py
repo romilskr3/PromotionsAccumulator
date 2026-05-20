@@ -13,7 +13,7 @@ COLUMNS = [
 ]
 
 # Extra fields for sorting/filtering in the web UI (not shown in the table).
-CSV_EXTRA_COLUMNS = ["from_sort", "until_sort"]
+CSV_EXTRA_COLUMNS = ["category", "from_sort", "until_sort"]
 
 
 def sort_key(p: Promotion) -> tuple:

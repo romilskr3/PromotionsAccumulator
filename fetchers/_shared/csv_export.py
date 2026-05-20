@@ -6,6 +6,7 @@ from pathlib import Path
 
 from fetchers._shared.columns import COLUMNS, CSV_EXTRA_COLUMNS, sort_key
 from fetchers._shared.models import DUBLIN, Promotion
+from fetchers._shared.produce_category import produce_type
 
 CSV_OUTPUT_PATH = Path(__file__).resolve().parents[2] / "output" / "promotions.csv"
 
@@ -19,6 +20,7 @@ def promotion_row(p: Promotion) -> dict[str, str]:
         "From Date": p.promotion_from.strftime("%d/%m"),
         "Until Date": p.promotion_until.strftime("%d/%m"),
         "Active today": "True" if p.active_today() else "False",
+        "category": produce_type(p.product),
         "from_sort": p.promotion_from.isoformat(),
         "until_sort": p.promotion_until.isoformat(),
     }

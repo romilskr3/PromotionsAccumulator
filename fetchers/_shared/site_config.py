@@ -4,6 +4,9 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
+
+from fetchers._shared.frequent_buy import FREQUENT_BUY_KEYWORDS
 _DEFAULT_OWNER = "romilskr3"
 _DEFAULT_REPO = "PromotionsAccumulator"
 
@@ -24,7 +27,7 @@ def github_repo() -> tuple[str, str]:
     return _DEFAULT_OWNER, _DEFAULT_REPO
 
 
-def site_config_dict() -> dict[str, str]:
+def site_config_dict() -> dict[str, Any]:
     owner, repo = github_repo()
     slug = f"{owner}/{repo}"
     return {
@@ -35,6 +38,7 @@ def site_config_dict() -> dict[str, str]:
             f"https://github.com/{owner}/{repo}/actions/workflows/"
             "refresh-promotions.yml"
         ),
+        "frequentBuyKeywords": list(FREQUENT_BUY_KEYWORDS),
     }
 
 

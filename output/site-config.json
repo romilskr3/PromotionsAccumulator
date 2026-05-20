@@ -2,5 +2,11 @@
   "owner": "romilskr3",
   "repo": "PromotionsAccumulator",
   "slug": "romilskr3/PromotionsAccumulator",
-  "workflowUrl": "https://github.com/romilskr3/PromotionsAccumulator/actions/workflows/refresh-promotions.yml"
+  "workflowUrl": "https://github.com/romilskr3/PromotionsAccumulator/actions/workflows/refresh-promotions.yml",
+  "frequentBuyKeywords": [
+    "onions",
+    "carrots",
+    "cucumbers",
+    "tomatoes"
+  ]
 }

@@ -128,3 +128,9 @@ You can also open `output/promotions.csv` directly to inspect the data.
 ## Table columns
 
 Supermarket, Product, Quantity, Price, From Date, Until Date, Active today
+
+## Frequent buys filter (vegetables tab)
+
+Keywords for the **Frequent buys** toggle are defined in:
+
+**[`fetchers/_shared/frequent_buy.py`](fetchers/_shared/frequent_buy.py)** — edit `FREQUENT_BUY_KEYWORDS`, then run `python3 scripts/update_promotions.py` and push so `site-config.json` updates on the site.

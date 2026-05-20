@@ -162,6 +162,16 @@ SITE_HTML = r"""<!DOCTYPE html>
       color: #fff;
       border-color: var(--text);
     }
+    .frequent-buy-wrap {
+      display: none;
+      align-items: center;
+    }
+    .frequent-buy-wrap.visible { display: flex; }
+    .frequent-buy-wrap .filters button[aria-pressed="true"] {
+      background: var(--veg);
+      border-color: var(--veg);
+      color: #fff;
+    }
     #search {
       flex: 1;
       min-width: 180px;
@@ -293,6 +303,11 @@ git push</pre>
         <button type="button" data-filter="active" aria-pressed="false">Live</button>
         <button type="button" data-filter="inactive" aria-pressed="false">Upcoming</button>
       </div>
+      <div class="frequent-buy-wrap visible" id="frequent-buy-wrap" role="group" aria-label="Frequent buys">
+        <div class="filters">
+          <button type="button" id="frequent-buy-btn" aria-pressed="false">Frequent buys</button>
+        </div>
+      </div>
       <input id="search" type="search" placeholder="Search in this tab…" autocomplete="off" />
       <span class="count" id="count"></span>
     </div>
@@ -320,6 +335,8 @@ git push</pre>
     let lastGenerated = "";
     let categoryTab = "vegetable";
     let statusFilter = "all";
+    let frequentBuyFilter = false;
+    let frequentBuyKeywords = ["onions", "carrots", "cucumbers", "tomatoes"];
     let sortKey = "supermarket";
     let sortDir = "asc";
 
@@ -329,6 +346,8 @@ git push</pre>
     const searchEl = document.getElementById("search");
     const refreshBtn = document.getElementById("refresh-btn");
     const refreshHint = document.getElementById("refresh-hint");
+    const frequentBuyWrap = document.getElementById("frequent-buy-wrap");
+    const frequentBuyBtn = document.getElementById("frequent-buy-btn");
 
     const VEG_FIRST = /\b(tomato|potato|onion|shallot|pepper|cucumber|broccoli|mushroom|radish|salad|courgette|carrot|cabbage|lettuce|spinach|leek|garlic|cauliflower|aubergine|asparagus|beans?\b|peas?\b)\b/i;
     const FRUIT = /\b(mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|grapefruit|lemon|lime|grape|melon|pineapple|peach|strawber|blueber|raspber|banana|kiwi|fig\b|apricot|nectarine|avocado|coconut|pomegranate|rhubarb)\b/i;
@@ -404,6 +423,37 @@ git push</pre>
       return { generated, rows };
     }
 
+    function matchesFrequentBuy(product) {
+      const name = product.toLowerCase();
+      return frequentBuyKeywords.some((kw) => {
+        const k = kw.toLowerCase().trim();
+        if (!k) return false;
+        if (name.includes(k)) return true;
+        if (k.endsWith("s") && k.length > 1 && name.includes(k.slice(0, -1))) return true;
+        return false;
+      });
+    }
+
+    function updateFrequentBuyToolbar() {
+      const onVeg = categoryTab === "vegetable";
+      frequentBuyWrap.classList.toggle("visible", onVeg);
+      if (!onVeg) {
+        frequentBuyFilter = false;
+        frequentBuyBtn.setAttribute("aria-pressed", "false");
+      }
+    }
+
+    async function loadSiteConfig() {
+      try {
+        const res = await fetch("site-config.json", { cache: "no-store" });
+        if (!res.ok) return;
+        const cfg = await res.json();
+        if (Array.isArray(cfg.frequentBuyKeywords) && cfg.frequentBuyKeywords.length) {
+          frequentBuyKeywords = cfg.frequentBuyKeywords;
+        }
+      } catch (_) { /* use defaults */ }
+    }
+
     function updateTabCounts() {
       const fruits = ROWS.filter((r) => r.category === "fruit").length;
       const veg = ROWS.filter((r) => r.category === "vegetable").length;
@@ -417,6 +467,7 @@ git push</pre>
         if (row.category !== categoryTab) return false;
         if (statusFilter === "active" && !row.active) return false;
         if (statusFilter === "inactive" && row.active) return false;
+        if (frequentBuyFilter && !matchesFrequentBuy(row.product)) return false;
         if (q) {
           const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
           if (!hay.includes(q)) return false;
@@ -477,14 +528,21 @@ git push</pre>
         document.querySelectorAll(".category-tabs button").forEach((b) => {
           b.setAttribute("aria-selected", b === btn ? "true" : "false");
         });
+        updateFrequentBuyToolbar();
         render();
       });
     });
 
-    document.querySelectorAll(".filters button").forEach((btn) => {
+    frequentBuyBtn.addEventListener("click", () => {
+      frequentBuyFilter = !frequentBuyFilter;
+      frequentBuyBtn.setAttribute("aria-pressed", frequentBuyFilter ? "true" : "false");
+      render();
+    });
+
+    document.querySelectorAll(".toolbar > .filters button").forEach((btn) => {
       btn.addEventListener("click", () => {
         statusFilter = btn.dataset.filter;
-        document.querySelectorAll(".filters button").forEach((b) => {
+        document.querySelectorAll(".toolbar > .filters button").forEach((b) => {
           b.setAttribute("aria-pressed", b === btn ? "true" : "false");
         });
         render();
@@ -518,6 +576,7 @@ git push</pre>
           ? `Generated ${generated} Europe/Dublin`
           : (rows.length ? "Promotions loaded" : "No promotions in CSV");
         updateTabCounts();
+        updateFrequentBuyToolbar();
         render();
         return true;
       } catch (err) {
@@ -542,7 +601,10 @@ git push</pre>
     }
 
     refreshBtn.addEventListener("click", reloadData);
-    load();
+    (async () => {
+      await loadSiteConfig();
+      await load();
+    })();
   </script>
 </body>
 </html>

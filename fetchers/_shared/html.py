@@ -60,6 +60,22 @@ SITE_HTML = r"""<!DOCTYPE html>
       margin: 0 0 1rem;
       max-width: 42rem;
     }
+    .local-refresh-help {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0 0 1rem;
+      max-width: 40rem;
+    }
+    .local-refresh-help summary { cursor: pointer; color: var(--accent); }
+    .local-refresh-help pre {
+      margin: 0.5rem 0 0;
+      padding: 0.75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+    }
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -134,9 +150,17 @@ SITE_HTML = r"""<!DOCTYPE html>
         <h1>Fruit &amp; Vegetable Promotions — Dublin</h1>
         <p class="meta" id="meta">Loading promotions…</p>
       </div>
-      <button type="button" id="refresh-btn" title="Download leaflets and regenerate data">Refresh data</button>
+      <button type="button" id="refresh-btn" title="Reload promotions.csv from GitHub">Reload data</button>
     </div>
     <p class="refresh-hint" id="refresh-hint" hidden></p>
+    <details class="local-refresh-help">
+      <summary>Fetch new leaflets (run on your Mac)</summary>
+      <pre>python3 scripts/update_promotions.py
+git add output/ docs/
+git commit -m "Update promotions"
+git push</pre>
+      <p>Then click <strong>Reload data</strong>. GitHub Actions refresh is unavailable while account billing blocks runners.</p>
+    </details>
     <div class="toolbar">
       <div class="filters" role="group" aria-label="Filter by active status">
         <button type="button" data-filter="all" aria-pressed="true">All</button>
@@ -167,8 +191,6 @@ SITE_HTML = r"""<!DOCTYPE html>
     const CSV_URL = "promotions.csv";
     let ROWS = [];
     let lastGenerated = "";
-    let siteConfig = null;
-    let pollTimer = null;
     const tbody = document.getElementById("tbody");
     const countEl = document.getElementById("count");
     const metaEl = document.getElementById("meta");
@@ -320,85 +342,25 @@ SITE_HTML = r"""<!DOCTYPE html>
       }
     }
 
-    function setRefreshUi(active, message) {
-      refreshBtn.disabled = active;
-      refreshBtn.textContent = active ? "Refreshing…" : "Refresh data";
-      if (message) {
-        refreshHint.hidden = false;
-        refreshHint.textContent = message;
-      } else {
-        refreshHint.hidden = true;
-        refreshHint.textContent = "";
-      }
-    }
-
-    function stopPolling() {
-      if (pollTimer) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-      }
-    }
-
-    function startPolling() {
-      stopPolling();
-      const started = Date.now();
-      const timeoutMs = 12 * 60 * 1000;
-      pollTimer = setInterval(async () => {
-        if (Date.now() - started > timeoutMs) {
-          stopPolling();
-          setRefreshUi(false, "");
-          metaEl.classList.add("error");
-          metaEl.textContent = "Refresh timed out. Check GitHub Actions for errors, then reload the page.";
-          return;
-        }
-        try {
-          const { generated, rows } = csvToRows(await fetchCsvText());
-          if (generated && generated !== lastGenerated) {
-            ROWS = rows;
-            lastGenerated = generated;
-            stopPolling();
-            setRefreshUi(false, "");
-            metaEl.classList.remove("error");
-            metaEl.textContent = `Generated ${generated}`;
-            render();
-          }
-        } catch (_) { /* keep polling */ }
-      }, 12000);
-    }
-
-    async function loadSiteConfig() {
-      try {
-        const res = await fetch("site-config.json", { cache: "no-store" });
-        if (res.ok) siteConfig = await res.json();
-      } catch (_) { /* optional */ }
-    }
-
-    function startRefresh() {
-      if (!siteConfig?.issueRefreshUrl) {
-        alert("site-config.json is missing. Run update_promotions.py and redeploy.");
-        return;
-      }
-      const ok = confirm(
-        "This downloads new leaflets and rebuilds the CSV on GitHub (about 3–8 minutes).\n\n" +
-        "1. GitHub will open with a pre-filled issue\n" +
-        "2. Click \"Submit new issue\" to start the refresh\n" +
-        "3. This page will load new data automatically when ready"
-      );
-      if (!ok) return;
-      window.open(siteConfig.issueRefreshUrl, "_blank", "noopener");
-      setRefreshUi(
-        true,
-        "Submit the issue in the GitHub tab, then wait — this page will update when the CSV changes."
-      );
-      startPolling();
-    }
-
-    refreshBtn.addEventListener("click", startRefresh);
-
-    (async () => {
-      await loadSiteConfig();
+    async function reloadData() {
+      const prev = lastGenerated;
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = "Reloading…";
+      refreshHint.hidden = false;
       await load();
-    })();
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = "Reload data";
+      if (lastGenerated && lastGenerated !== prev) {
+        refreshHint.textContent = "Loaded newer data from GitHub.";
+      } else {
+        refreshHint.textContent =
+          "Same data as before. To download new leaflets, run the commands under “Fetch new leaflets” then push.";
+      }
+    }
+
+    refreshBtn.addEventListener("click", reloadData);
+
+    load();
   </script>
 </body>
 </html>

@@ -4,11 +4,6 @@ import json
 import re
 import subprocess
 from pathlib import Path
-from urllib.parse import quote
-
-REFRESH_ISSUE_TITLE = "[refresh-promotions]"
-REFRESH_ISSUE_BODY = "Refresh requested from the promotions site."
-
 _DEFAULT_OWNER = "romilskr3"
 _DEFAULT_REPO = "PromotionsAccumulator"
 
@@ -32,17 +27,10 @@ def github_repo() -> tuple[str, str]:
 def site_config_dict() -> dict[str, str]:
     owner, repo = github_repo()
     slug = f"{owner}/{repo}"
-    issue_title = quote(REFRESH_ISSUE_TITLE)
-    issue_body = quote(REFRESH_ISSUE_BODY)
     return {
         "owner": owner,
         "repo": repo,
         "slug": slug,
-        "refreshIssueTitle": REFRESH_ISSUE_TITLE,
-        "issueRefreshUrl": (
-            f"https://github.com/{owner}/{repo}/issues/new"
-            f"?title={issue_title}&body={issue_body}"
-        ),
         "workflowUrl": (
             f"https://github.com/{owner}/{repo}/actions/workflows/"
             "refresh-promotions.yml"

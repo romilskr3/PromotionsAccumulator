@@ -81,26 +81,23 @@ git push
 
 Pages rebuilds when `docs/` changes on `main` (branch deploy), or when the deploy workflow succeeds (Actions).
 
-### Refresh from the website
+### Refresh data
 
-The live site has a **Refresh data** button (top right). GitHub Pages cannot run Python in the browser, so refresh uses a **GitHub Actions** workflow:
+GitHub Pages is static — the browser cannot download leaflets. **GitHub Actions cannot run** while your account shows a billing lock, so refresh is done **on your Mac**:
 
-1. Click **Refresh data** on the site.
-2. Confirm, then **submit the pre-filled issue** that opens in a new tab (title `[refresh-promotions]`).
-3. The workflow downloads leaflets, runs `update_promotions.py`, and pushes updated `output/` and `docs/`.
-4. The page polls the CSV and reloads when the timestamp changes (~3–8 minutes).
+```bash
+./scripts/refresh_and_push.sh
+```
 
-**One-time:** enable **Issues** on the repo (Settings → General → Features → Issues).
+Or step by step: `python3 scripts/update_promotions.py --refresh-leaflets`, then commit and push `output/` and `docs/`.
 
-**Optional — Tesco in CI:** add repo secret `TESCO_STORAGE_STATE_B64` (base64 of `leaflets/tesco/storage-state.json`) so Clubcard prices refresh on GitHub too. Without it, Lidl and Aldi still update; Tesco uses cached data or is skipped.
+On the live site, **Reload data** (top right) fetches the latest `promotions.csv` from GitHub after you push. Expand **Fetch new leaflets** on the page for the same commands.
 
-Manual run: **Actions** → **Refresh promotions data** → **Run workflow**.
+When Actions billing works again, you can re-enable [`.github/workflows/refresh-promotions.yml`](.github/workflows/refresh-promotions.yml) (see comments in that file).
 
-### Actions still show “billing issue”?
+### Actions show “billing issue”?
 
-That message means GitHub is **not starting any job** on hosted runners — renaming or recreating the workflow does not fix it. Check [github.com/settings/billing](https://github.com/settings/billing) (payment method, overdue invoices, spending limits). After billing is truly cleared, use **Actions → Deploy site to GitHub Pages → Re-run all jobs**, or push any commit to `main`.
-
-Until then, use **branch deploy** (`main` / `docs`) — your site files are already in the repo.
+GitHub will not start **any** workflow job until billing is cleared at [github.com/settings/billing](https://github.com/settings/billing). Use **branch deploy** (`main` / `docs`) for the site and **local refresh** for new data until then.
 
 ### View locally (no GitHub)
 

@@ -56,11 +56,8 @@ One-time setup on [github.com](https://github.com) (personal account):
 1. **Create a new repository** (e.g. `PromotionsAccumulator`). Public or private both work with Pages.
 2. **Push this project** to that repo (`main` branch).
 3. **Enable Pages:** repo → **Settings** → **Pages** → **Build and deployment**
-
-   **Recommended if Actions fail** (e.g. billing lock): **Deploy from a branch** → `main` → **`/docs`**.  
-   No workflow required; GitHub serves `docs/index.html` and `docs/promotions.csv` directly.
-
-   **Optional:** **GitHub Actions** → workflow [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) deploys `docs/` after each push. Requires Actions to run on your account ([Billing settings](https://github.com/settings/billing)).
+   - **Source:** **Deploy from a branch** → `main` → **`/docs`**  
+   GitHub serves `docs/index.html` and `docs/promotions.csv` directly (no Actions workflow needed).
 
 4. After deploy (usually 1–2 minutes), your site is live at:
 
@@ -79,7 +76,7 @@ git commit -m "Update promotions"
 git push
 ```
 
-Pages rebuilds when `docs/` changes on `main` (branch deploy), or when the deploy workflow succeeds (Actions).
+Pages rebuilds automatically when `docs/` changes on `main`.
 
 ### Refresh data
 
@@ -129,8 +126,8 @@ You can also open `output/promotions.csv` directly to inspect the data.
 
 Supermarket, Product, Quantity, Price, From Date, Until Date, Active today
 
-## Frequent buys filter (vegetables tab)
+## Favourites filter (vegetables tab)
 
-Keywords for the **Frequent buys** toggle are defined in:
+Keywords for the **Favourites** toggle are defined in:
 
 **[`fetchers/_shared/frequent_buy.py`](fetchers/_shared/frequent_buy.py)** — edit `FREQUENT_BUY_KEYWORDS`, then run `python3 scripts/update_promotions.py` and push so `site-config.json` updates on the site.

@@ -80,21 +80,18 @@ Pages rebuilds automatically when `docs/` changes on `main`.
 
 ### Refresh data
 
-GitHub Pages is static — the browser cannot download leaflets. **GitHub Actions cannot run** while your account shows a billing lock, so refresh is done **on your Mac**:
+**On your Mac** (always works):
 
 ```bash
 ./scripts/refresh_and_push.sh
 ```
 
-Or step by step: `python3 scripts/update_promotions.py --refresh-leaflets`, then commit and push `output/` and `docs/`.
+**On GitHub** (optional): **Actions** → [**Refresh promotions data**](.github/workflows/refresh-promotions.yml) → **Run workflow**.  
+Fetches leaflets, updates `output/` and `docs/`, pushes to `main`; Pages redeploys automatically.
 
-On the live site, **Reload data** (top right) fetches the latest `promotions.csv` from GitHub after you push. Expand **Fetch new leaflets** on the page for the same commands.
+Optional repo secret **`TESCO_STORAGE_STATE_B64`**: base64 of `leaflets/tesco/storage-state.json` so Tesco Clubcard prices refresh in CI (run `python3 scripts/save_tesco_session.py` locally first).
 
-When Actions billing works again, you can re-enable [`.github/workflows/refresh-promotions.yml`](.github/workflows/refresh-promotions.yml) (see comments in that file).
-
-### Actions show “billing issue”?
-
-GitHub will not start **any** workflow job until billing is cleared at [github.com/settings/billing](https://github.com/settings/billing). Use **branch deploy** (`main` / `docs`) for the site and **local refresh** for new data until then.
+On the live site, **Reload data** fetches the latest `promotions.csv` after a push.
 
 ### View locally (no GitHub)
 

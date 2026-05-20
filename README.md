@@ -1,8 +1,10 @@
 # Promotions Accumulator
 
-Personal tool to fetch fruit and vegetable promotions from Dublin supermarkets into a sortable table, published on GitHub Pages.
+Fetches fruit and vegetable promotions from Dublin supermarkets (Lidl, Aldi, Tesco) and publishes a sortable comparison table on GitHub Pages.
 
-## Setup
+**Live site:** [romilskr3.github.io/PromotionsAccumulator](https://romilskr3.github.io/PromotionsAccumulator/)
+
+## Setup (once)
 
 ```bash
 python3 -m venv .venv
@@ -11,120 +13,82 @@ pip install -e .
 playwright install chromium
 ```
 
-If Playwright cannot find browsers, set:
+Tesco Clubcard prices need a saved browser session (Akamai blocks headless bots):
 
 ```bash
-export PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"
+python3 scripts/save_tesco_session.py   # once, or when Tesco stops working
 ```
 
-## Usage
+## Update the live website
 
-```bash
-# Download leaflets + fetch offers + update outputs
-python3 scripts/update_promotions.py
-
-# Re-parse cached leaflets only (no leaflet download)
-python3 scripts/update_promotions.py --skip-download
-
-# Force fresh leaflet download
-python3 scripts/update_promotions.py --refresh-leaflets
-
-# One store
-python3 scripts/update_promotions.py --store lidl
-
-# Tesco: save Clubcard browser session once (Akamai blocks headless bots)
-python3 scripts/save_tesco_session.py
-python3 scripts/update_promotions.py --store tesco
-```
-
-### Output files (`output/`)
-
-| File | Use |
-|------|-----|
-| `output/promotions.csv` | All promotion data (source of truth) |
-| `output/index.html` | Interactive table — loads CSV in the browser |
-| `output/.nojekyll` | Lets GitHub Pages serve the site as static files |
-
-The HTML page supports **All / Active / Not active** filters, search, and **click column headers to sort**.
-
-Cached leaflets: [`leaflets/`](leaflets/) (see [`leaflets/README.md`](leaflets/README.md))
-
-## Publish on your personal GitHub (GitHub Pages)
-
-One-time setup on [github.com](https://github.com) (personal account):
-
-1. **Create a new repository** (e.g. `PromotionsAccumulator`). Public or private both work with Pages.
-2. **Push this project** to that repo (`main` branch).
-3. **Enable Pages:** repo → **Settings** → **Pages** → **Build and deployment**
-   - **Source:** **Deploy from a branch** → `main` → **`/docs`**  
-   GitHub serves `docs/index.html` and `docs/promotions.csv` directly (no Actions workflow needed).
-
-4. After deploy (usually 1–2 minutes), your site is live at:
-
-   **`https://<your-github-username>.github.io/<repository-name>/`**
-
-   Example: `https://jane.github.io/PromotionsAccumulator/`
-
-### Update the live site
-
-Whenever promotions change:
-
-```bash
-python3 scripts/update_promotions.py
-git add output/ docs/
-git commit -m "Update promotions"
-git push
-```
-
-Pages rebuilds automatically when `docs/` changes on `main`.
-
-### Refresh data
-
-**On your Mac** (always works):
+From the project root, with your virtualenv active:
 
 ```bash
 ./scripts/refresh_and_push.sh
 ```
 
-**On GitHub** (optional): **Actions** → [**Refresh promotions data**](.github/workflows/refresh-promotions.yml) → **Run workflow**.  
-Fetches leaflets, updates `output/` and `docs/`, pushes to `main`; Pages redeploys automatically.
+This will:
 
-Optional repo secret **`TESCO_STORAGE_STATE_B64`**: base64 of `leaflets/tesco/storage-state.json` so Tesco Clubcard prices refresh in CI (run `python3 scripts/save_tesco_session.py` locally first).
+1. Download the latest leaflets and fetch offers (`--refresh-leaflets`)
+2. Regenerate `output/` and `docs/` (CSV + HTML)
+3. Commit and push to `main`
+4. Trigger a GitHub Pages redeploy (usually within a minute)
 
-On the live site, **Reload data** fetches the latest `promotions.csv` after a push.
+Then open the live site and click **Reload data** (top right) to load the new `promotions.csv`.
 
-### View locally (no GitHub)
+**Optional (GitHub):** **Actions** → **Refresh promotions data** → **Run workflow** — same steps in the cloud if your account’s Actions billing is OK. Until then, use the script above.
 
-The site loads `promotions.csv` via `fetch`, which browsers block on `file://`. Use a local server:
+**Manual equivalent:**
+
+```bash
+python3 scripts/update_promotions.py --refresh-leaflets
+git add output/ docs/
+git commit -m "Update promotions"
+git push origin main
+```
+
+**Re-parse cached leaflets only** (no download):
+
+```bash
+python3 scripts/update_promotions.py --skip-download
+```
+
+**One store:**
+
+```bash
+python3 scripts/update_promotions.py --store lidl
+```
+
+## View locally
+
+The site loads `promotions.csv` via `fetch`, which does not work on `file://`. Serve `output/`:
 
 ```bash
 cd output && python3 -m http.server 8080
 # http://127.0.0.1:8080/
 ```
 
-You can also open `output/promotions.csv` directly to inspect the data.
+## GitHub Pages (first-time deploy)
 
-## Roadmap
+1. Create a public repo and push this project to `main`.
+2. **Settings → Pages → Build and deployment:** deploy from branch `main`, folder **`/docs`**.
+3. Site URL: `https://<username>.github.io/<repo-name>/`
 
-- **Lidl Plus app login** (deferred): authenticated weekly offers from the app API, after a few more stores are done.
-- **Aldi**: Super 6 from leaflet `spreads.json` page text; biweekly Savers dates (e.g. Thu 7 May – Wed 20 May).
+Each push that updates `docs/` refreshes the site. No GitHub Actions workflow is required.
 
 ## Stores
 
-| Store | Status |
+| Store | Source |
 |-------|--------|
-| Lidl | Super Savers fruit & veg only (6 per week) |
-| Aldi | Super 6 fruit & veg from leaflet spreads (biweekly Savers dates) |
-| Tesco | Fresh 4 fruit & veg (Clubcard prices from buy-list page) |
-| SuperValu | Stub |
-| Dunnes | Stub |
+| Lidl | Super Savers fruit & veg (weekly) |
+| Aldi | Super 6 from leaflet spreads |
+| Tesco | Fresh 4 (Clubcard prices; needs saved session) |
+| SuperValu, Dunnes | Not implemented |
 
-## Table columns
+Cached leaflets live under [`leaflets/`](leaflets/).
 
-Supermarket, Product, Quantity, Price, From Date, Until Date, Active today
+## Customisation
 
-## Favourites filter (vegetables tab)
+**Favourites** keywords (vegetables tab): edit `FREQUENT_BUY_KEYWORDS` in [`fetchers/_shared/frequent_buy.py`](fetchers/_shared/frequent_buy.py), then run `./scripts/refresh_and_push.sh`.
 
-Keywords for the **Favourites** toggle are defined in:
-
-**[`fetchers/_shared/frequent_buy.py`](fetchers/_shared/frequent_buy.py)** — edit `FREQUENT_BUY_KEYWORDS`, then run `python3 scripts/update_promotions.py` and push so `site-config.json` updates on the site.
+Site UI and table logic: [`fetchers/_shared/html.py`](fetchers/_shared/html.py).

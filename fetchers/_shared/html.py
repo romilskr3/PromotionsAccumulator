@@ -310,16 +310,6 @@ SITE_HTML = r"""<!DOCTYPE html>
     .store.default { background: #475569; color: #fff; }
     .price { font-weight: 600; font-variant-numeric: tabular-nums; }
     .product-name { font-weight: 500; }
-    .product-cell {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .product-emoji {
-      font-size: 1.2rem;
-      line-height: 1;
-      flex-shrink: 0;
-    }
     .badge {
       display: inline-block;
       padding: 0.25rem 0.6rem;
@@ -355,11 +345,8 @@ SITE_HTML = r"""<!DOCTYPE html>
     </div>
     <p class="refresh-hint" id="refresh-hint" hidden></p>
     <details class="local-refresh-help">
-      <summary>Fetch new leaflets (run on your Mac)</summary>
-      <pre>python3 scripts/update_promotions.py
-git add output/ docs/
-git commit -m "Update promotions"
-git push</pre>
+      <summary>Update data (run on your Mac)</summary>
+      <pre>./scripts/refresh_and_push.sh</pre>
       <p>Then click <strong>Reload data</strong>.</p>
     </details>
 
@@ -457,22 +444,6 @@ git push</pre>
 
     const VEG_FIRST = /\b(tomato|potato|onion|shallot|pepper|cucumber|broccoli|mushroom|radish|salad|courgette|carrot|cabbage|lettuce|spinach|leek|garlic|cauliflower|aubergine|asparagus|beans?\b|peas?\b)\b/i;
     const FRUIT = /\b(mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|grapefruit|lemon|lime|grape|melon|pineapple|peach|strawber|blueber|raspber|banana|kiwi|fig\b|apricot|nectarine|avocado|coconut|pomegranate|rhubarb)\b/i;
-    const PRODUCT_EMOJI_RULES = [
-      ["easypeelers", "🍊"], ["easypeel", "🍊"],
-      ["cherry tomato", "🍅"], ["plum tomato", "🍅"], ["salad tomato", "🍅"],
-      ["baby plum tomato", "🍅"], ["snack bite pepper", "🫑"], ["yellow pepper", "🫑"],
-      ["tomato", "🍅"], ["pepper", "🫑"],
-      ["shallot", "🧅"], ["onion", "🧅"],
-      ["cucumber", "🥒"], ["carrot", "🥕"],
-      ["baby potato", "🥔"], ["potato", "🥔"],
-      ["broccoli", "🥦"], ["mushroom", "🍄"], ["radish", "🥕"],
-      ["salad trio", "🥗"], ["salad", "🥗"],
-      ["avocado", "🥑"], ["mango", "🥭"],
-      ["orange", "🍊"], ["pear", "🍐"], ["apple", "🍎"],
-      ["strawberr", "🍓"], ["banana", "🍌"], ["grape", "🍇"],
-      ["lemon", "🍋"], ["peach", "🍑"],
-    ];
-
     function classifyProduct(name) {
       const text = name.toLowerCase();
       if (text.includes("salad trio")) return "vegetable";
@@ -487,14 +458,6 @@ git push</pre>
       if (s.includes("aldi")) return "aldi";
       if (s.includes("tesco")) return "tesco";
       return "";
-    }
-
-    function productEmoji(product, category) {
-      const name = product.toLowerCase();
-      for (const [key, emoji] of PRODUCT_EMOJI_RULES) {
-        if (name.includes(key)) return emoji;
-      }
-      return category === "fruit" ? "🍎" : "🥬";
     }
 
     function parseCsvLine(line) {
@@ -632,7 +595,7 @@ git push</pre>
           return `
         <tr class="${rowClass}" data-active="${row.active}" data-store="${sc}">
           <td><span class="store ${sc}">${esc(row.supermarket)}</span></td>
-          <td class="product-name"><span class="product-cell"><span class="product-emoji" aria-hidden="true">${productEmoji(row.product, row.category)}</span><span>${esc(row.product)}</span></span></td>
+          <td class="product-name">${esc(row.product)}</td>
           <td>${esc(row.quantity)}</td>
           <td class="price">${esc(row.price)}</td>
           <td>${esc(row.from)}</td>

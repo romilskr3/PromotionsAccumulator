@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "promotions-accumulator"
+version = "0.1.0"
+description = "Fetch fruit & veg promotions from Dublin supermarkets"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31",
+    "beautifulsoup4>=4.12",
+    "playwright>=1.40",
+]
+
+[project.scripts]
+update-promotions = "scripts.update_promotions:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fetchers*", "scripts*"]

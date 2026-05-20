@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fruit &amp; Vegetable Promotions — Dublin</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #fff;
+      --text: #1a1a1a;
+      --muted: #5c6570;
+      --border: #d8dee4;
+      --accent: #00539f;
+      --active: #0d7a3e;
+      --inactive: #9aa3ad;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .filters button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 0.4rem 0.85rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .filters button[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    #search {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    thead { background: #eef2f6; }
+    th {
+      text-align: left;
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+    }
+    th:hover { background: #e2e8ef; }
+    th .sort { opacity: 0.45; font-size: 0.75rem; margin-left: 0.25rem; }
+    th[data-sort-dir="asc"] .sort::after { content: "▲"; opacity: 1; }
+    th[data-sort-dir="desc"] .sort::after { content: "▼"; opacity: 1; }
+    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr.hidden { display: none; }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge.active { background: #d8f0e0; color: var(--active); }
+    .badge.inactive { background: #eceff2; color: var(--inactive); }
+    .count { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 720px) {
+      .card { overflow-x: auto; }
+      table { min-width: 720px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Fruit &amp; Vegetable Promotions — Dublin</h1>
+    <p class="meta">Generated 2026-05-20 11:37 Europe/Dublin</p>
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Filter by active status">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="active" aria-pressed="false">Active</button>
+        <button type="button" data-filter="inactive" aria-pressed="false">Not active</button>
+      </div>
+      <input id="search" type="search" placeholder="Search product or store…" autocomplete="off" />
+      <span class="count" id="count"></span>
+    </div>
+    <div class="card">
+      <table id="promo-table">
+        <thead>
+          <tr>
+            <th data-key="supermarket">Supermarket<span class="sort"></span></th>
+            <th data-key="product">Product<span class="sort"></span></th>
+            <th data-key="quantity">Quantity<span class="sort"></span></th>
+            <th data-key="price">Price<span class="sort"></span></th>
+            <th data-key="from">From Date<span class="sort"></span></th>
+            <th data-key="until">Until Date<span class="sort"></span></th>
+            <th data-key="active">Active<span class="sort"></span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    const ROWS = [{"supermarket": "Aldi", "product": "Loose Ready to Eat Avocado", "quantity": "Each", "price": "€0.49", "from": "07/05", "until": "20/05", "from_sort": "2026-05-07", "until_sort": "2026-05-20", "active": true}, {"supermarket": "Aldi", "product": "Mango", "quantity": "Each", "price": "€0.59", "from": "07/05", "until": "20/05", "from_sort": "2026-05-07", "until_sort": "2026-05-20", "active": true}, {"supermarket": "Aldi", "product": "Microwaveable Baby Potatoes", "quantity": "400 g", "price": "€0.49", "from": "07/05", "until": "20/05", "from_sort": "2026-05-07", "until_sort": "2026-05-20", "active": true}, {"supermarket": "Aldi", "product": "Oranges", "quantity": "4 pack", "price": "€1.49", "from": "07/05", "until": "20/05", "from_sort": "2026-05-07", "until_sort": "2026-05-20", "active": true}, {"supermarket": "Aldi", "product": "Shallots", "quantity": "300 g", "price": "€0.49", "from": "07/05", "until": "20/05", "from_sort": "2026-05-07", "until_sort": "2026-05-20", "active": true}, {"supermarket": "Aldi", "product": "Snack Bite Peppers", "quantity": "250 g", "price": "€0.79", "from": "07/05", "until": "20/05", "from_sort": "2026-05-07", "until_sort": "2026-05-20", "active": true}, {"supermarket": "Aldi", "product": "Baby Plum Tomatoes", "quantity": "250 g", "price": "€0.79", "from": "21/05", "until": "03/06", "from_sort": "2026-05-21", "until_sort": "2026-06-03", "active": false}, {"supermarket": "Aldi", "product": "Broccoli", "quantity": "500 g", "price": "€0.49", "from": "21/05", "until": "03/06", "from_sort": "2026-05-21", "until_sort": "2026-06-03", "active": false}, {"supermarket": "Aldi", "product": "Brown Onions", "quantity": "1 kg", "price": "€0.49", "from": "21/05", "until": "03/06", "from_sort": "2026-05-21", "until_sort": "2026-06-03", "active": false}, {"supermarket": "Aldi", "product": "Loose Conference Pear", "quantity": "Each", "price": "€0.29", "from": "21/05", "until": "03/06", "from_sort": "2026-05-21", "until_sort": "2026-06-03", "active": false}, {"supermarket": "Aldi", "product": "Orange", "quantity": "3 for €1", "price": "€1", "from": "21/05", "until": "03/06", "from_sort": "2026-05-21", "until_sort": "2026-06-03", "active": false}, {"supermarket": "Aldi", "product": "Rooster Potatoes", "quantity": "1 kg", "price": "€0.49", "from": "21/05", "until": "03/06", "from_sort": "2026-05-21", "until_sort": "2026-06-03", "active": false}, {"supermarket": "Tesco", "product": "Dole Easypeelers", "quantity": "500 g", "price": "€0.74", "from": "07/05", "until": "03/06", "from_sort": "2026-05-07", "until_sort": "2026-06-03", "active": true}, {"supermarket": "Tesco", "product": "Red Onion", "quantity": "750 g", "price": "€0.69", "from": "07/05", "until": "03/06", "from_sort": "2026-05-07", "until_sort": "2026-06-03", "active": true}, {"supermarket": "Tesco", "product": "Salad Tomatoes", "quantity": "6 pack", "price": "€0.89", "from": "07/05", "until": "03/06", "from_sort": "2026-05-07", "until_sort": "2026-06-03", "active": true}, {"supermarket": "Tesco", "product": "Whole Cucumber", "quantity": "Each", "price": "€0.79", "from": "07/05", "until": "03/06", "from_sort": "2026-05-07", "until_sort": "2026-06-03", "active": true}];
+    const tbody = document.getElementById("tbody");
+    const countEl = document.getElementById("count");
+    const searchEl = document.getElementById("search");
+    let statusFilter = "all";
+    let sortKey = "supermarket";
+    let sortDir = "asc";
+
+    function render() {
+      const q = searchEl.value.trim().toLowerCase();
+      let visible = ROWS.filter((row) => {
+        if (statusFilter === "active" && !row.active) return false;
+        if (statusFilter === "inactive" && row.active) return false;
+        if (q) {
+          const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      visible.sort((a, b) => {
+        let av = a[sortKey] ?? "";
+        let bv = b[sortKey] ?? "";
+        if (sortKey === "from") { av = a.from_sort; bv = b.from_sort; }
+        if (sortKey === "until") { av = a.until_sort; bv = b.until_sort; }
+        let cmp;
+        if (sortKey === "active") cmp = (a.active === b.active) ? 0 : a.active ? -1 : 1;
+        else cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+      tbody.innerHTML = visible.map((row) => `
+        <tr data-active="${row.active}">
+          <td>${esc(row.supermarket)}</td>
+          <td>${esc(row.product)}</td>
+          <td>${esc(row.quantity)}</td>
+          <td>${esc(row.price)}</td>
+          <td>${esc(row.from)}</td>
+          <td>${esc(row.until)}</td>
+          <td><span class="badge ${row.active ? "active" : "inactive"}">${row.active ? "Active" : "Inactive"}</span></td>
+        </tr>`).join("");
+      countEl.textContent = `${visible.length} of ${ROWS.length} shown`;
+      document.querySelectorAll("th").forEach((th) => {
+        th.dataset.sortDir = th.dataset.key === sortKey ? sortDir : "";
+      });
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    document.querySelectorAll(".filters button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        statusFilter = btn.dataset.filter;
+        document.querySelectorAll(".filters button").forEach((b) => {
+          b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+        });
+        render();
+      });
+    });
+
+    searchEl.addEventListener("input", render);
+
+    document.querySelectorAll("th[data-key]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const key = th.dataset.key;
+        if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
+        else { sortKey = key; sortDir = "asc"; }
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

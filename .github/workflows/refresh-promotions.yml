@@ -1,0 +1,75 @@
+# Fetch latest leaflets, regenerate CSV, push to main (updates docs/ for Pages).
+# Trigger from the site: click "Refresh data" → submit the pre-filled GitHub issue.
+# Or: Actions → Refresh promotions data → Run workflow.
+
+name: Refresh promotions data
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: refresh-promotions
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.issue.title == '[refresh-promotions]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          playwright install --with-deps chromium
+
+      - name: Restore Tesco browser session (optional)
+        env:
+          TESCO_STORAGE_STATE_B64: ${{ secrets.TESCO_STORAGE_STATE_B64 }}
+        run: |
+          if [ -n "$TESCO_STORAGE_STATE_B64" ]; then
+            mkdir -p leaflets/tesco
+            echo "$TESCO_STORAGE_STATE_B64" | base64 -d > leaflets/tesco/storage-state.json
+          fi
+
+      - name: Fetch promotions and update outputs
+        run: python3 scripts/update_promotions.py --refresh-leaflets
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/ docs/
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Refresh promotions data [automated]"
+            git push
+          fi
+
+      - name: Close refresh issue
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+            });

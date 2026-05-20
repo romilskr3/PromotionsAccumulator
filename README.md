@@ -81,6 +81,21 @@ git push
 
 Pages rebuilds when `docs/` changes on `main` (branch deploy), or when the deploy workflow succeeds (Actions).
 
+### Refresh from the website
+
+The live site has a **Refresh data** button (top right). GitHub Pages cannot run Python in the browser, so refresh uses a **GitHub Actions** workflow:
+
+1. Click **Refresh data** on the site.
+2. Confirm, then **submit the pre-filled issue** that opens in a new tab (title `[refresh-promotions]`).
+3. The workflow downloads leaflets, runs `update_promotions.py`, and pushes updated `output/` and `docs/`.
+4. The page polls the CSV and reloads when the timestamp changes (~3–8 minutes).
+
+**One-time:** enable **Issues** on the repo (Settings → General → Features → Issues).
+
+**Optional — Tesco in CI:** add repo secret `TESCO_STORAGE_STATE_B64` (base64 of `leaflets/tesco/storage-state.json`) so Clubcard prices refresh on GitHub too. Without it, Lidl and Aldi still update; Tesco uses cached data or is skipped.
+
+Manual run: **Actions** → **Refresh promotions data** → **Run workflow**.
+
 ### Actions still show “billing issue”?
 
 That message means GitHub is **not starting any job** on hosted runners — renaming or recreating the workflow does not fix it. Check [github.com/settings/billing](https://github.com/settings/billing) (payment method, overdue invoices, spending limits). After billing is truly cleared, use **Actions → Deploy site to GitHub Pages → Re-run all jobs**, or push any commit to `main`.

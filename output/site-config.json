@@ -1,0 +1,8 @@
+{
+  "owner": "romilskr3",
+  "repo": "PromotionsAccumulator",
+  "slug": "romilskr3/PromotionsAccumulator",
+  "refreshIssueTitle": "[refresh-promotions]",
+  "issueRefreshUrl": "https://github.com/romilskr3/PromotionsAccumulator/issues/new?title=%5Brefresh-promotions%5D&body=Refresh%20requested%20from%20the%20promotions%20site.",
+  "workflowUrl": "https://github.com/romilskr3/PromotionsAccumulator/actions/workflows/refresh-promotions.yml"
+}

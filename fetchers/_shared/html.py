@@ -30,9 +30,36 @@ SITE_HTML = r"""<!DOCTYPE html>
       line-height: 1.45;
     }
     .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
-    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .page-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .page-header h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin: 0; }
     .meta.error { color: #b42318; }
+    #refresh-btn {
+      font: inherit;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #refresh-btn:hover:not(:disabled) { filter: brightness(1.08); }
+    #refresh-btn:disabled { opacity: 0.65; cursor: wait; }
+    .refresh-hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 0 0 1rem;
+      max-width: 42rem;
+    }
     .toolbar {
       display: flex;
       flex-wrap: wrap;
@@ -102,8 +129,14 @@ SITE_HTML = r"""<!DOCTYPE html>
 </head>
 <body>
   <div class="wrap">
-    <h1>Fruit &amp; Vegetable Promotions — Dublin</h1>
-    <p class="meta" id="meta">Loading promotions…</p>
+    <div class="page-header">
+      <div>
+        <h1>Fruit &amp; Vegetable Promotions — Dublin</h1>
+        <p class="meta" id="meta">Loading promotions…</p>
+      </div>
+      <button type="button" id="refresh-btn" title="Download leaflets and regenerate data">Refresh data</button>
+    </div>
+    <p class="refresh-hint" id="refresh-hint" hidden></p>
     <div class="toolbar">
       <div class="filters" role="group" aria-label="Filter by active status">
         <button type="button" data-filter="all" aria-pressed="true">All</button>
@@ -133,10 +166,15 @@ SITE_HTML = r"""<!DOCTYPE html>
   <script>
     const CSV_URL = "promotions.csv";
     let ROWS = [];
+    let lastGenerated = "";
+    let siteConfig = null;
+    let pollTimer = null;
     const tbody = document.getElementById("tbody");
     const countEl = document.getElementById("count");
     const metaEl = document.getElementById("meta");
     const searchEl = document.getElementById("search");
+    const refreshBtn = document.getElementById("refresh-btn");
+    const refreshHint = document.getElementById("refresh-hint");
     let statusFilter = "all";
     let sortKey = "supermarket";
     let sortDir = "asc";
@@ -257,25 +295,110 @@ SITE_HTML = r"""<!DOCTYPE html>
       });
     });
 
+    async function fetchCsvText() {
+      const res = await fetch(`${CSV_URL}?t=${Date.now()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.text();
+    }
+
     async function load() {
       try {
-        const res = await fetch(CSV_URL, { cache: "no-cache" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { generated, rows } = csvToRows(await res.text());
+        const { generated, rows } = csvToRows(await fetchCsvText());
         ROWS = rows;
+        if (generated) lastGenerated = generated;
         metaEl.classList.remove("error");
         metaEl.textContent = generated
           ? `Generated ${generated}`
           : (rows.length ? "Promotions loaded" : "No promotions in CSV");
         render();
+        return true;
       } catch (err) {
         metaEl.classList.add("error");
         metaEl.textContent = `Could not load ${CSV_URL}: ${err.message}. Run update_promotions.py and open via a local server (file:// blocks fetch).`;
         countEl.textContent = "";
+        return false;
       }
     }
 
-    load();
+    function setRefreshUi(active, message) {
+      refreshBtn.disabled = active;
+      refreshBtn.textContent = active ? "Refreshing…" : "Refresh data";
+      if (message) {
+        refreshHint.hidden = false;
+        refreshHint.textContent = message;
+      } else {
+        refreshHint.hidden = true;
+        refreshHint.textContent = "";
+      }
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      const started = Date.now();
+      const timeoutMs = 12 * 60 * 1000;
+      pollTimer = setInterval(async () => {
+        if (Date.now() - started > timeoutMs) {
+          stopPolling();
+          setRefreshUi(false, "");
+          metaEl.classList.add("error");
+          metaEl.textContent = "Refresh timed out. Check GitHub Actions for errors, then reload the page.";
+          return;
+        }
+        try {
+          const { generated, rows } = csvToRows(await fetchCsvText());
+          if (generated && generated !== lastGenerated) {
+            ROWS = rows;
+            lastGenerated = generated;
+            stopPolling();
+            setRefreshUi(false, "");
+            metaEl.classList.remove("error");
+            metaEl.textContent = `Generated ${generated}`;
+            render();
+          }
+        } catch (_) { /* keep polling */ }
+      }, 12000);
+    }
+
+    async function loadSiteConfig() {
+      try {
+        const res = await fetch("site-config.json", { cache: "no-store" });
+        if (res.ok) siteConfig = await res.json();
+      } catch (_) { /* optional */ }
+    }
+
+    function startRefresh() {
+      if (!siteConfig?.issueRefreshUrl) {
+        alert("site-config.json is missing. Run update_promotions.py and redeploy.");
+        return;
+      }
+      const ok = confirm(
+        "This downloads new leaflets and rebuilds the CSV on GitHub (about 3–8 minutes).\n\n" +
+        "1. GitHub will open with a pre-filled issue\n" +
+        "2. Click \"Submit new issue\" to start the refresh\n" +
+        "3. This page will load new data automatically when ready"
+      );
+      if (!ok) return;
+      window.open(siteConfig.issueRefreshUrl, "_blank", "noopener");
+      setRefreshUi(
+        true,
+        "Submit the issue in the GitHub tab, then wait — this page will update when the CSV changes."
+      );
+      startPolling();
+    }
+
+    refreshBtn.addEventListener("click", startRefresh);
+
+    (async () => {
+      await loadSiteConfig();
+      await load();
+    })();
   </script>
 </body>
 </html>

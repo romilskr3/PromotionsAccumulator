@@ -9,7 +9,7 @@ SITE_HTML = r"""<!DOCTYPE html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fruit &amp; Vegetable Promotions — Dublin</title>
+  <title>Who should we buy from?</title>
   <style>
     :root {
       --bg: #f0f2f5;
@@ -204,7 +204,7 @@ SITE_HTML = r"""<!DOCTYPE html>
       background: #e8f1fa;
       border-bottom-color: #c5d9ef;
     }
-    tbody tr.row-lidl td:first-child { box-shadow: inset 4px 0 0 #0050aa; }
+    tbody tr.row-lidl td:first-child { box-shadow: inset 4px 0 0 #e30613; }
     tbody tr.row-lidl:hover td { background: #dce9f7; }
     tbody tr.row-aldi td {
       background: #fff6e8;
@@ -216,7 +216,7 @@ SITE_HTML = r"""<!DOCTYPE html>
       background: #fdebec;
       border-bottom-color: #f5c4c9;
     }
-    tbody tr.row-tesco td:first-child { box-shadow: inset 4px 0 0 #ee1c2e; }
+    tbody tr.row-tesco td:first-child { box-shadow: inset 4px 0 0 #00539f; }
     tbody tr.row-tesco:hover td { background: #fbdfe3; }
     tbody tr.row-default td { background: #fafbfc; }
     .store {
@@ -227,7 +227,7 @@ SITE_HTML = r"""<!DOCTYPE html>
       border-radius: 6px;
       letter-spacing: 0.02em;
     }
-    .store.lidl { background: #0050aa; color: #fff; }
+    .store.lidl { background: #ffd500; color: #1a1a1a; }
     .store.aldi { background: #00529f; color: #fff; }
     .store.tesco { background: #ee1c2e; color: #fff; }
     .store.default { background: #475569; color: #fff; }
@@ -261,7 +261,7 @@ SITE_HTML = r"""<!DOCTYPE html>
   <div class="wrap">
     <div class="page-header">
       <div>
-        <h1>Dublin produce promotions</h1>
+        <h1>Who should we buy from?</h1>
         <p class="meta" id="meta">Loading promotions…</p>
       </div>
       <button type="button" id="refresh-btn" title="Reload promotions.csv from GitHub">Reload data</button>
@@ -277,13 +277,13 @@ git push</pre>
     </details>
 
     <div class="category-tabs" role="tablist" aria-label="Produce category">
-      <button type="button" role="tab" id="tab-fruit" data-category="fruit" aria-selected="true" aria-controls="promo-panel">
-        <span>Fruits</span>
-        <span class="tab-count" id="tab-fruit-count">0</span>
-      </button>
-      <button type="button" role="tab" id="tab-vegetable" data-category="vegetable" aria-selected="false" aria-controls="promo-panel">
+      <button type="button" role="tab" id="tab-vegetable" data-category="vegetable" aria-selected="true" aria-controls="promo-panel">
         <span>Vegetables</span>
         <span class="tab-count" id="tab-vegetable-count">0</span>
+      </button>
+      <button type="button" role="tab" id="tab-fruit" data-category="fruit" aria-selected="false" aria-controls="promo-panel">
+        <span>Fruits</span>
+        <span class="tab-count" id="tab-fruit-count">0</span>
       </button>
     </div>
 
@@ -318,7 +318,7 @@ git push</pre>
     const CSV_URL = "promotions.csv";
     let ROWS = [];
     let lastGenerated = "";
-    let categoryTab = "fruit";
+    let categoryTab = "vegetable";
     let statusFilter = "all";
     let sortKey = "supermarket";
     let sortDir = "asc";

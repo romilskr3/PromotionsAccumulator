@@ -5,6 +5,7 @@ on:
     branches: [main, master]
     paths:
       - output/**
+      - docs/**
   workflow_dispatch:
 
 permissions:
@@ -27,6 +28,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: output
+          path: docs
       - id: deployment
         uses: actions/deploy-pages@v4

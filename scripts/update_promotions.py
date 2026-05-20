@@ -63,7 +63,8 @@ def main() -> int:
     outputs = write_all_outputs(promotions)
     print(f"Wrote {len(promotions)} promotion(s):")
     print(f"  CSV:  {outputs['csv']}")
-    print(f"  Site: {outputs['index']}  (commit output/ and push for GitHub Pages)")
+    print(f"  Site: {outputs['index']}")
+    print(f"  Pages mirror: {outputs['docs_index']}  (commit output/ and docs/, then push)")
     return 0
 
 

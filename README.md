@@ -57,8 +57,10 @@ One-time setup on [github.com](https://github.com) (personal account):
 2. **Push this project** to that repo (`main` branch).
 3. **Enable Pages:** repo → **Settings** → **Pages** → **Build and deployment**
    - **Source:** GitHub Actions  
-   (The workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) deploys the `output/` folder.)
-4. After the first successful deploy, your site is live at:
+   (Workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) deploys `docs/`, mirrored from `output/` on each update.)
+
+   **Fallback:** Deploy from branch `main` → `/docs` if you prefer not to use Actions.
+4. After deploy (usually 1–2 minutes), your site is live at:
 
    **`https://<your-github-username>.github.io/<repository-name>/`**
 
@@ -70,12 +72,12 @@ Whenever promotions change:
 
 ```bash
 python3 scripts/update_promotions.py
-git add output/
+git add output/ docs/
 git commit -m "Update promotions"
 git push
 ```
 
-GitHub Actions redeploys automatically when `output/` changes.
+Pages rebuilds when `docs/` changes on `main`.
 
 ### View locally (no GitHub)
 

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fruit &amp; Vegetable Promotions — Dublin</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #fff;
+      --text: #1a1a1a;
+      --muted: #5c6570;
+      --border: #d8dee4;
+      --accent: #00539f;
+      --active: #0d7a3e;
+      --inactive: #9aa3ad;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .meta.error { color: #b42318; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .filters button {
+      font: inherit;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      cursor: pointer;
+      color: var(--text);
+    }
+    .filters button[aria-pressed="true"] {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    #search {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font: inherit;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { padding: 0.65rem 0.85rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th {
+      background: #eef2f6;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    th:hover { background: #e2e8ef; }
+    th .sort::after { content: " \\2195"; opacity: 0.35; font-size: 0.75em; }
+    th[data-sort-dir="asc"] .sort::after { content: " \\2191"; opacity: 1; }
+    th[data-sort-dir="desc"] .sort::after { content: " \\2193"; opacity: 1; }
+    tr:last-child td { border-bottom: none; }
+    tr[data-active="false"] { opacity: 0.72; }
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .badge.active { background: #d8f0e0; color: var(--active); }
+    .badge.inactive { background: #eceff2; color: var(--inactive); }
+    .count { color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 720px) {
+      .card { overflow-x: auto; }
+      table { min-width: 720px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Fruit &amp; Vegetable Promotions — Dublin</h1>
+    <p class="meta" id="meta">Loading promotions…</p>
+    <div class="toolbar">
+      <div class="filters" role="group" aria-label="Filter by active status">
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="active" aria-pressed="false">Active</button>
+        <button type="button" data-filter="inactive" aria-pressed="false">Not active</button>
+      </div>
+      <input id="search" type="search" placeholder="Search product or store…" autocomplete="off" />
+      <span class="count" id="count"></span>
+    </div>
+    <div class="card">
+      <table id="promo-table">
+        <thead>
+          <tr>
+            <th data-key="supermarket">Supermarket<span class="sort"></span></th>
+            <th data-key="product">Product<span class="sort"></span></th>
+            <th data-key="quantity">Quantity<span class="sort"></span></th>
+            <th data-key="price">Price<span class="sort"></span></th>
+            <th data-key="from">From Date<span class="sort"></span></th>
+            <th data-key="until">Until Date<span class="sort"></span></th>
+            <th data-key="active">Active<span class="sort"></span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    const CSV_URL = "promotions.csv";
+    let ROWS = [];
+    const tbody = document.getElementById("tbody");
+    const countEl = document.getElementById("count");
+    const metaEl = document.getElementById("meta");
+    const searchEl = document.getElementById("search");
+    let statusFilter = "all";
+    let sortKey = "supermarket";
+    let sortDir = "asc";
+
+    function parseCsvLine(line) {
+      const fields = [];
+      let field = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (inQuotes) {
+          if (c === '"') {
+            if (line[i + 1] === '"') { field += '"'; i++; }
+            else inQuotes = false;
+          } else field += c;
+        } else if (c === '"') inQuotes = true;
+        else if (c === ",") { fields.push(field); field = ""; }
+        else field += c;
+      }
+      fields.push(field);
+      return fields;
+    }
+
+    function csvToRows(text) {
+      let generated = "";
+      const trimmed = text.replace(/^\uFEFF/, "");
+      const lines = trimmed.split(/\r?\n/).filter((l) => l.length);
+      const dataLines = [];
+      for (const line of lines) {
+        if (line.startsWith("# Generated:")) {
+          generated = line.replace(/^# Generated:\s*/, "").trim();
+        } else dataLines.push(line);
+      }
+      const parsed = dataLines.map(parseCsvLine);
+      if (!parsed.length) return { generated, rows: [] };
+      const headers = parsed[0].map((h) => h.trim());
+      const rows = parsed.slice(1).filter((r) => r.some((c) => c.trim())).map((cells) => {
+        const rec = {};
+        headers.forEach((h, i) => { rec[h] = (cells[i] ?? "").trim(); });
+        return {
+          supermarket: rec["Supermarket"] ?? "",
+          product: rec["Product"] ?? "",
+          quantity: rec["Quantity"] ?? "",
+          price: rec["Price"] ?? "",
+          from: rec["From Date"] ?? "",
+          until: rec["Until Date"] ?? "",
+          from_sort: rec["from_sort"] ?? "",
+          until_sort: rec["until_sort"] ?? "",
+          active: (rec["Active today"] ?? "").toLowerCase() === "true",
+        };
+      });
+      return { generated, rows };
+    }
+
+    function render() {
+      const q = searchEl.value.trim().toLowerCase();
+      let visible = ROWS.filter((row) => {
+        if (statusFilter === "active" && !row.active) return false;
+        if (statusFilter === "inactive" && row.active) return false;
+        if (q) {
+          const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      visible.sort((a, b) => {
+        let av = a[sortKey] ?? "";
+        let bv = b[sortKey] ?? "";
+        if (sortKey === "from") { av = a.from_sort; bv = b.from_sort; }
+        if (sortKey === "until") { av = a.until_sort; bv = b.until_sort; }
+        let cmp;
+        if (sortKey === "active") cmp = (a.active === b.active) ? 0 : a.active ? -1 : 1;
+        else cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+      tbody.innerHTML = visible.map((row) => `
+        <tr data-active="${row.active}">
+          <td>${esc(row.supermarket)}</td>
+          <td>${esc(row.product)}</td>
+          <td>${esc(row.quantity)}</td>
+          <td>${esc(row.price)}</td>
+          <td>${esc(row.from)}</td>
+          <td>${esc(row.until)}</td>
+          <td><span class="badge ${row.active ? "active" : "inactive"}">${row.active ? "Active" : "Inactive"}</span></td>
+        </tr>`).join("");
+      countEl.textContent = `${visible.length} of ${ROWS.length} shown`;
+      document.querySelectorAll("th").forEach((th) => {
+        th.dataset.sortDir = th.dataset.key === sortKey ? sortDir : "";
+      });
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    document.querySelectorAll(".filters button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        statusFilter = btn.dataset.filter;
+        document.querySelectorAll(".filters button").forEach((b) => {
+          b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+        });
+        render();
+      });
+    });
+
+    searchEl.addEventListener("input", render);
+
+    document.querySelectorAll("th[data-key]").forEach((th) => {
+      th.addEventListener("click", () => {
+        const key = th.dataset.key;
+        if (sortKey === key) sortDir = sortDir === "asc" ? "desc" : "asc";
+        else { sortKey = key; sortDir = "asc"; }
+        render();
+      });
+    });
+
+    async function load() {
+      try {
+        const res = await fetch(CSV_URL, { cache: "no-cache" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { generated, rows } = csvToRows(await res.text());
+        ROWS = rows;
+        metaEl.classList.remove("error");
+        metaEl.textContent = generated
+          ? `Generated ${generated}`
+          : (rows.length ? "Promotions loaded" : "No promotions in CSV");
+        render();
+      } catch (err) {
+        metaEl.classList.add("error");
+        metaEl.textContent = `Could not load ${CSV_URL}: ${err.message}. Run update_promotions.py and open via a local server (file:// blocks fetch).`;
+        countEl.textContent = "";
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

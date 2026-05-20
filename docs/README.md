@@ -1,5 +1,5 @@
-# Moved to `output/`
+# GitHub Pages site (auto-generated)
 
-GitHub Pages now deploys from [`output/`](../output/) (`index.html` + `promotions.csv`).
+Do not edit by hand. Run `python3 scripts/update_promotions.py` — it writes data to [`output/`](../output/) and mirrors the site here.
 
-Run `python3 scripts/update_promotions.py` and commit the `output/` folder to update the live site.
+**Pages settings:** Deploy from branch `main`, folder **`/docs`**.

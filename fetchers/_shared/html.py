@@ -173,7 +173,102 @@ SITE_HTML = r"""<!DOCTYPE html>
       border: 1px solid var(--border);
       border-radius: 10px;
       font: inherit;
+      font-size: 1rem;
       background: var(--card);
+    }
+    .toolbar-filters-mobile {
+      display: none;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+    .toolbar-filters-mobile .mobile-filter {
+      flex: 1;
+      min-width: 0;
+      font-size: 1rem;
+      padding: 0.55rem 1.75rem 0.55rem 0.65rem;
+    }
+    .promo-cards {
+      display: none;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+    .promo-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1rem 0.9rem;
+      background: var(--card);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    .promo-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .promo-card-head .badge { margin-left: auto; }
+    .promo-card-main {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
+    }
+    .promo-card-product {
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--text);
+    }
+    .promo-card-price {
+      flex-shrink: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .promo-card-meta {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--muted);
+    }
+    .promo-card.row-lidl {
+      background: #fffbeb;
+      border-color: #fde68a;
+      box-shadow: inset 4px 0 0 #ea580c;
+    }
+    .promo-card.row-aldi {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      box-shadow: inset 4px 0 0 #00529f;
+    }
+    .promo-card.row-tesco {
+      background: #fef2f2;
+      border-color: #fecaca;
+      box-shadow: inset 4px 0 0 #ee1c2e;
+    }
+    .promo-card.row-supervalu {
+      background: #f8d7da;
+      border-color: #e8a0a8;
+      box-shadow: inset 4px 0 0 #8b0000;
+    }
+    .promo-card.row-default {
+      background: #fafbfc;
+      box-shadow: inset 4px 0 0 #94a3b8;
+    }
+    .promo-cards-empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem 1rem;
+      font-style: italic;
+      margin: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
     }
     #search:focus {
       outline: 2px solid var(--accent);
@@ -391,9 +486,39 @@ SITE_HTML = r"""<!DOCTYPE html>
       display: none;
     }
     @media (max-width: 720px) {
-      .card { overflow-x: auto; }
-      table { min-width: 680px; }
-      .category-tabs button { font-size: 0.9rem; padding: 0.65rem 0.5rem; }
+      .wrap { padding: 1rem 0.75rem 2.5rem; }
+      .page-header h1 { font-size: 1.35rem; }
+      #refresh-btn {
+        width: 100%;
+        padding: 0.65rem 1rem;
+        font-size: 1rem;
+      }
+      .page-header { flex-direction: column; align-items: stretch; }
+      .category-tabs button {
+        font-size: 0.95rem;
+        padding: 0.75rem 0.5rem;
+        min-height: 2.75rem;
+      }
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      #search { min-width: 0; width: 100%; }
+      #favourites-btn {
+        width: 100%;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+      }
+      .toolbar-filters-mobile { display: flex; }
+      .promo-panel-desktop { display: none !important; }
+      .promo-cards { display: flex; }
+      .ended-desktop { display: none !important; }
+      .ended-cards { display: flex; }
+    }
+    @media (min-width: 721px) {
+      .toolbar-filters-mobile { display: none !important; }
+      .promo-cards { display: none !important; }
+      .ended-cards { display: none !important; }
     }
   </style>
 </head>
@@ -432,7 +557,23 @@ SITE_HTML = r"""<!DOCTYPE html>
       <span class="count" id="count"></span>
     </div>
 
-    <div class="card" id="promo-panel" role="tabpanel">
+    <div class="toolbar-filters-mobile" id="mobile-filters">
+      <select class="col-filter mobile-filter" id="filter-store-mobile" aria-label="Filter by store">
+        <option value="all">All stores</option>
+        <option value="Lidl">Lidl</option>
+        <option value="Aldi">Aldi</option>
+        <option value="Tesco">Tesco</option>
+        <option value="SuperValu">SuperValu</option>
+      </select>
+      <select class="col-filter mobile-filter" id="filter-status-mobile" aria-label="Filter by status">
+        <option value="all">All active</option>
+        <option value="live">Live</option>
+        <option value="upcoming">Upcoming</option>
+      </select>
+    </div>
+
+    <div id="promo-panel" role="tabpanel">
+      <div class="card promo-panel-desktop">
       <table id="promo-table">
         <thead>
           <tr>
@@ -481,6 +622,8 @@ SITE_HTML = r"""<!DOCTYPE html>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
+      </div>
+      <div class="promo-cards" id="promo-cards" aria-live="polite"></div>
     </div>
 
     <details class="ended-section" id="ended-section">
@@ -489,7 +632,7 @@ SITE_HTML = r"""<!DOCTYPE html>
         <span class="ended-count" id="ended-count">0</span>
       </summary>
       <div class="ended-panel">
-        <div class="card">
+        <div class="card ended-desktop">
           <table id="ended-table" aria-label="Ended promotions">
             <thead>
               <tr>
@@ -505,6 +648,7 @@ SITE_HTML = r"""<!DOCTYPE html>
             <tbody id="ended-tbody"></tbody>
           </table>
         </div>
+        <div class="promo-cards ended-cards" id="ended-cards" aria-live="polite"></div>
       </div>
     </details>
   </div>
@@ -521,7 +665,9 @@ SITE_HTML = r"""<!DOCTYPE html>
     let sortDir = "asc";
 
     const tbody = document.getElementById("tbody");
+    const promoCards = document.getElementById("promo-cards");
     const endedTbody = document.getElementById("ended-tbody");
+    const endedCards = document.getElementById("ended-cards");
     const endedCountEl = document.getElementById("ended-count");
     const endedSection = document.getElementById("ended-section");
     const countEl = document.getElementById("count");
@@ -533,6 +679,8 @@ SITE_HTML = r"""<!DOCTYPE html>
     const favouritesBtn = document.getElementById("favourites-btn");
     const filterStore = document.getElementById("filter-store");
     const filterStatus = document.getElementById("filter-status");
+    const filterStoreMobile = document.getElementById("filter-store-mobile");
+    const filterStatusMobile = document.getElementById("filter-status-mobile");
 
     const VEG_FIRST = /\b(tomato|potato|onion|shallot|pepper|cucumber|broccoli|mushroom|radish|salad|courgette|carrot|cabbage|lettuce|spinach|leek|garlic|cauliflower|aubergine|asparagus|beans?\b|peas?\b)\b/i;
     const FRUIT = /\b(mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|grapefruit|lemon|lime|grape|melon|pineapple|peach|strawber|blueber|raspber|banana|kiwi|fig\b|apricot|nectarine|avocado|coconut|pomegranate|rhubarb)\b/i;
@@ -711,8 +859,30 @@ SITE_HTML = r"""<!DOCTYPE html>
     }
 
     function updateFilterSelectStyles() {
-      filterStore.classList.toggle("is-active", storeFilter !== "all");
-      filterStatus.classList.toggle("is-active", statusFilter !== "all");
+      const activeStore = storeFilter !== "all";
+      const activeStatus = statusFilter !== "all";
+      for (const el of [filterStore, filterStoreMobile]) {
+        el.classList.toggle("is-active", activeStore);
+      }
+      for (const el of [filterStatus, filterStatusMobile]) {
+        el.classList.toggle("is-active", activeStatus);
+      }
+    }
+
+    function setStoreFilter(value) {
+      storeFilter = value;
+      filterStore.value = value;
+      filterStoreMobile.value = value;
+      updateFilterSelectStyles();
+      render();
+    }
+
+    function setStatusFilter(value) {
+      statusFilter = value;
+      filterStatus.value = value;
+      filterStatusMobile.value = value;
+      updateFilterSelectStyles();
+      render();
     }
 
     function isEndedRow(row) {
@@ -770,6 +940,39 @@ SITE_HTML = r"""<!DOCTYPE html>
       }
     }
 
+    function cardMetaLine(row) {
+      const parts = [];
+      if (row.quantity && row.quantity !== "—") parts.push(row.quantity);
+      if (row.from && row.until) parts.push(`${row.from} – ${row.until}`);
+      return parts.join(" · ") || "—";
+    }
+
+    function rowToCardHtml(row) {
+      const sc = storeClass(row.supermarket) || "default";
+      const rowClass = sc === "default" ? "row-default" : `row-${sc}`;
+      const status = rowStatus(row);
+      return `
+        <article class="promo-card ${rowClass}">
+          <div class="promo-card-head">
+            <span class="store ${sc}">${esc(row.supermarket)}</span>
+            <span class="badge ${status}">${status.toUpperCase()}</span>
+          </div>
+          <div class="promo-card-main">
+            <h3 class="promo-card-product">${esc(cleanProductName(row.product))}</h3>
+            <span class="promo-card-price">${esc(row.price)}</span>
+          </div>
+          <p class="promo-card-meta">${esc(cardMetaLine(row))}</p>
+        </article>`;
+    }
+
+    function fillCardList(target, rows, emptyMessage) {
+      if (!rows.length) {
+        target.innerHTML = `<p class="promo-cards-empty">${emptyMessage}</p>`;
+      } else {
+        target.innerHTML = rows.map(rowToCardHtml).join("");
+      }
+    }
+
     function updateTabCounts() {
       const active = (r) => !isEndedRow(r);
       const fruits = ROWS.filter((r) => r.category === "fruit" && active(r)).length;
@@ -791,11 +994,9 @@ SITE_HTML = r"""<!DOCTYPE html>
       const visible = sortRows(activeRows);
 
       const label = categoryTab === "fruit" ? "fruit" : "vegetable";
-      fillTableBody(
-        tbody,
-        visible,
-        `No ${label} promotions match your filters.`,
-      );
+      const emptyActive = `No ${label} promotions match your filters.`;
+      fillTableBody(tbody, visible, emptyActive);
+      fillCardList(promoCards, visible, emptyActive);
 
       const endedRows = sortRows(
         ROWS.filter((row) => {
@@ -803,11 +1004,9 @@ SITE_HTML = r"""<!DOCTYPE html>
           return matchesSharedFilters(row, q);
         }),
       );
-      fillTableBody(
-        endedTbody,
-        endedRows,
-        `No ended ${label} promotions match your filters.`,
-      );
+      const emptyEnded = `No ended ${label} promotions match your filters.`;
+      fillTableBody(endedTbody, endedRows, emptyEnded);
+      fillCardList(endedCards, endedRows, emptyEnded);
 
       const endedTotal = ROWS.filter((r) => isEndedRow(r)).length;
       const endedInTab = ROWS.filter(
@@ -851,16 +1050,10 @@ SITE_HTML = r"""<!DOCTYPE html>
       render();
     });
 
-    filterStore.addEventListener("change", () => {
-      storeFilter = filterStore.value;
-      updateFilterSelectStyles();
-      render();
-    });
-    filterStatus.addEventListener("change", () => {
-      statusFilter = filterStatus.value;
-      updateFilterSelectStyles();
-      render();
-    });
+    filterStore.addEventListener("change", () => setStoreFilter(filterStore.value));
+    filterStoreMobile.addEventListener("change", () => setStoreFilter(filterStoreMobile.value));
+    filterStatus.addEventListener("change", () => setStatusFilter(filterStatus.value));
+    filterStatusMobile.addEventListener("change", () => setStatusFilter(filterStatusMobile.value));
     filterStore.addEventListener("click", (e) => e.stopPropagation());
     filterStatus.addEventListener("click", (e) => e.stopPropagation());
 

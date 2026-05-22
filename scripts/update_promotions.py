@@ -12,6 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from fetchers._shared.csv_export import CSV_OUTPUT_PATH
+from fetchers._shared.csv_import import read_promotions_csv
+from fetchers._shared.merge import merge_with_previous_csv
 from fetchers._shared.publish import write_all_outputs
 from fetchers.registry import STORES, fetch_all
 
@@ -51,7 +54,7 @@ def main() -> int:
     )
 
     try:
-        promotions = fetch_all(
+        report = fetch_all(
             stores=args.stores,
             skip_download=args.skip_download,
             refresh_leaflets=args.refresh_leaflets,
@@ -59,6 +62,9 @@ def main() -> int:
     except RuntimeError as exc:
         logging.error("%s", exc)
         return 1
+
+    previous = read_promotions_csv(CSV_OUTPUT_PATH)
+    promotions = merge_with_previous_csv(report, previous)
 
     outputs = write_all_outputs(promotions)
     print(f"Wrote {len(promotions)} promotion(s):")

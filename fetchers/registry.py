@@ -4,6 +4,7 @@ import importlib
 import logging
 from typing import Callable
 
+from fetchers._shared.merge import FetchReport, StoreFetchResult
 from fetchers._shared.models import Promotion
 
 logger = logging.getLogger(__name__)
@@ -29,9 +30,9 @@ def fetch_all(
     stores: list[str] | None = None,
     skip_download: bool = False,
     refresh_leaflets: bool = False,
-) -> list[Promotion]:
+) -> FetchReport:
     selected = stores or list(STORES.keys())
-    all_promotions: list[Promotion] = []
+    results: list[StoreFetchResult] = []
     errors = 0
 
     for store_key in selected:
@@ -46,12 +47,27 @@ def fetch_all(
                 refresh_leaflets=refresh_leaflets,
             )
             logger.info("%s: %d promotion(s)", name, len(promos))
-            all_promotions.extend(promos)
+            results.append(
+                StoreFetchResult(
+                    store_key=store_key,
+                    store_name=name,
+                    promotions=promos,
+                )
+            )
         except Exception as exc:
             errors += 1
             logger.error("%s fetch failed: %s", name, exc)
+            results.append(
+                StoreFetchResult(
+                    store_key=store_key,
+                    store_name=name,
+                    promotions=[],
+                    failed=True,
+                    error_message=str(exc),
+                )
+            )
 
     if errors == len(selected):
         raise RuntimeError("All store fetchers failed")
 
-    return all_promotions
+    return FetchReport(results=results)

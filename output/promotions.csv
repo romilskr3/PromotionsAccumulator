@@ -1,4 +1,4 @@
-# Generated: 2026-05-22T11:59+01:00
+# Generated: 2026-05-22T12:07+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Baby Plum Tomatoes,250 g,€0.79,21/05,03/06,Live,True,vegetable,2026-05-21,2026-06-03
 Aldi,Broccoli,500 g,€0.49,21/05,03/06,Live,True,vegetable,2026-05-21,2026-06-03
@@ -23,6 +23,13 @@ Lidl,Extra Fine Beans,220 g,€0.99,28/05,03/05,Upcoming,False,vegetable,2026-05
 Lidl,Irish Rooster Potatoes,1 kg,€0.99,28/05,03/05,Upcoming,False,vegetable,2026-05-28,2027-05-03
 Lidl,Loose Grapefruit,1 piece,€0.49,28/05,03/05,Upcoming,False,fruit,2026-05-28,2027-05-03
 Lidl,PINK LADY Apples,6 pack,€1.99,28/05,03/05,Upcoming,False,fruit,2026-05-28,2027-05-03
+SuperValu,Baby Potatoes,1 kg,€0.79,21/05,03/06,Live,True,vegetable,2026-05-21,2026-06-03
+SuperValu,Extra Large Oranges,4 pack,€1.49,21/05,03/06,Live,True,fruit,2026-05-21,2026-06-03
+SuperValu,Loose Conference Pears,Each,€0.29,21/05,03/06,Live,True,fruit,2026-05-21,2026-06-03
+SuperValu,Royal Gala Apple,6 pack,€0.99,21/05,03/06,Live,True,fruit,2026-05-21,2026-06-03
+SuperValu,Super Sweet Irish Strawberries,325 g,€4.50,21/05,03/06,Live,True,fruit,2026-05-21,2026-06-03
+SuperValu,Twinpack Peppers,2 pce,€0.99,21/05,03/06,Live,True,vegetable,2026-05-21,2026-06-03
+SuperValu,Vine Tomato,500 g,€1.49,21/05,03/06,Live,True,vegetable,2026-05-21,2026-06-03
 Tesco,Dole Easypeelers,500 g,€0.74,07/05,03/06,Live,True,fruit,2026-05-07,2026-06-03
 Tesco,Red Onion,750 g,€0.69,07/05,03/06,Live,True,vegetable,2026-05-07,2026-06-03
 Tesco,Salad Tomatoes,6 pack,€0.89,07/05,03/06,Live,True,vegetable,2026-05-07,2026-06-03

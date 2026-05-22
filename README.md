@@ -59,6 +59,8 @@ python3 scripts/update_promotions.py --skip-download
 python3 scripts/update_promotions.py --store lidl
 ```
 
+If a store fetch **succeeds**, new rows are merged with that store’s existing CSV rows (same product+week is updated from the fetch; older weeks stay until their dates show as Ended). If a fetch **fails** or returns no rows, previous rows for that store are kept. Unselected stores are unchanged when using `--store`.
+
 ## View locally
 
 The site loads `promotions.csv` via `fetch`, which does not work on `file://`. Serve `output/`:

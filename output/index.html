@@ -329,6 +329,60 @@
       padding: 2rem 1rem;
       font-style: italic;
     }
+    .ended-section {
+      margin-top: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .ended-section summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.85rem 1rem;
+      color: var(--muted);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+    .ended-section summary::-webkit-details-marker { display: none; }
+    .ended-section summary::before {
+      content: "";
+      width: 0.45rem;
+      height: 0.45rem;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(-45deg);
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+    .ended-section[open] summary::before { transform: rotate(45deg); }
+    .ended-section summary:hover { color: var(--text); background: #f8fafc; }
+    .ended-section .ended-count {
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #475569;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+    }
+    .ended-section .ended-panel {
+      border-top: 1px solid var(--border);
+      padding: 0 0 0.25rem;
+    }
+    .ended-section .ended-panel .card {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      margin: 0;
+    }
+    .ended-section:not(:has(tbody tr:not(.empty-row))) {
+      display: none;
+    }
     @media (max-width: 720px) {
       .card { overflow-x: auto; }
       table { min-width: 680px; }
@@ -409,10 +463,9 @@
                 <button type="button" class="th-sort" data-sort-key="active">Status<span class="sort"></span></button>
                 <div class="col-filter-wrap">
                   <select class="col-filter" id="filter-status" aria-label="Filter by status">
-                    <option value="all">All</option>
+                    <option value="all">All active</option>
                     <option value="live">Live</option>
                     <option value="upcoming">Upcoming</option>
-                    <option value="ended">Ended</option>
                   </select>
                 </div>
               </div>
@@ -422,6 +475,31 @@
         <tbody id="tbody"></tbody>
       </table>
     </div>
+
+    <details class="ended-section" id="ended-section">
+      <summary>
+        <span>View ended promotions</span>
+        <span class="ended-count" id="ended-count">0</span>
+      </summary>
+      <div class="ended-panel">
+        <div class="card">
+          <table id="ended-table" aria-label="Ended promotions">
+            <thead>
+              <tr>
+                <th>Store</th>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ended-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
   </div>
   <script>
     const CSV_URL = "promotions.csv";
@@ -436,6 +514,9 @@
     let sortDir = "asc";
 
     const tbody = document.getElementById("tbody");
+    const endedTbody = document.getElementById("ended-tbody");
+    const endedCountEl = document.getElementById("ended-count");
+    const endedSection = document.getElementById("ended-section");
     const countEl = document.getElementById("count");
     const metaEl = document.getElementById("meta");
     const searchEl = document.getElementById("search");
@@ -627,30 +708,23 @@
       filterStatus.classList.toggle("is-active", statusFilter !== "all");
     }
 
-    function updateTabCounts() {
-      const fruits = ROWS.filter((r) => r.category === "fruit").length;
-      const veg = ROWS.filter((r) => r.category === "vegetable").length;
-      document.getElementById("tab-fruit-count").textContent = fruits;
-      document.getElementById("tab-vegetable-count").textContent = veg;
+    function isEndedRow(row) {
+      return rowStatus(row) === "ended";
     }
 
-    function render() {
-      const q = searchEl.value.trim().toLowerCase();
-      let visible = ROWS.filter((row) => {
-        if (row.category !== categoryTab) return false;
-        if (storeFilter !== "all" && row.supermarket !== storeFilter) return false;
-        const status = rowStatus(row);
-        if (statusFilter === "live" && status !== "live") return false;
-        if (statusFilter === "upcoming" && status !== "upcoming") return false;
-        if (statusFilter === "ended" && status !== "ended") return false;
-        if (favouritesFilter && !matchesFavourites(row.product)) return false;
-        if (q) {
-          const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
-          if (!hay.includes(q)) return false;
-        }
-        return true;
-      });
-      visible.sort((a, b) => {
+    function matchesSharedFilters(row, q) {
+      if (row.category !== categoryTab) return false;
+      if (storeFilter !== "all" && row.supermarket !== storeFilter) return false;
+      if (favouritesFilter && !matchesFavourites(row.product)) return false;
+      if (q) {
+        const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }
+
+    function sortRows(rows) {
+      return [...rows].sort((a, b) => {
         let av = a[sortKey] ?? "";
         let bv = b[sortKey] ?? "";
         if (sortKey === "from") { av = a.from_sort; bv = b.from_sort; }
@@ -663,18 +737,13 @@
         else cmp = String(av).localeCompare(String(bv), undefined, { numeric: true });
         return sortDir === "asc" ? cmp : -cmp;
       });
+    }
 
-      if (!visible.length) {
-        const label = categoryTab === "fruit" ? "fruit" : "vegetable";
-        tbody.innerHTML = `<tr class="empty-row"><td colspan="7">No ${label} promotions match your filters.</td></tr>`;
-      } else {
-        tbody.innerHTML = visible.map((row) => {
-          const sc = storeClass(row.supermarket) || "default";
-          const rowClass = sc === "default" ? "row-default" : `row-${sc}`;
-          const status = rowStatus(row);
-          const statusClass = status;
-          const statusLabel = status.toUpperCase();
-          return `
+    function rowToHtml(row) {
+      const sc = storeClass(row.supermarket) || "default";
+      const rowClass = sc === "default" ? "row-default" : `row-${sc}`;
+      const status = rowStatus(row);
+      return `
         <tr class="${rowClass}" data-active="${row.active}" data-store="${sc}">
           <td><span class="store ${sc}">${esc(row.supermarket)}</span></td>
           <td class="product-name">${esc(cleanProductName(row.product))}</td>
@@ -682,14 +751,69 @@
           <td class="price">${esc(row.price)}</td>
           <td>${esc(row.from)}</td>
           <td>${esc(row.until)}</td>
-          <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+          <td><span class="badge ${status}">${status.toUpperCase()}</span></td>
         </tr>`;
-        }).join("");
-      }
+    }
 
-      const inTab = ROWS.filter((r) => r.category === categoryTab).length;
+    function fillTableBody(target, rows, emptyMessage) {
+      if (!rows.length) {
+        target.innerHTML = `<tr class="empty-row"><td colspan="7">${emptyMessage}</td></tr>`;
+      } else {
+        target.innerHTML = rows.map(rowToHtml).join("");
+      }
+    }
+
+    function updateTabCounts() {
+      const active = (r) => !isEndedRow(r);
+      const fruits = ROWS.filter((r) => r.category === "fruit" && active(r)).length;
+      const veg = ROWS.filter((r) => r.category === "vegetable" && active(r)).length;
+      document.getElementById("tab-fruit-count").textContent = fruits;
+      document.getElementById("tab-vegetable-count").textContent = veg;
+    }
+
+    function render() {
+      const q = searchEl.value.trim().toLowerCase();
+      const activeRows = ROWS.filter((row) => {
+        if (isEndedRow(row)) return false;
+        if (!matchesSharedFilters(row, q)) return false;
+        const status = rowStatus(row);
+        if (statusFilter === "live" && status !== "live") return false;
+        if (statusFilter === "upcoming" && status !== "upcoming") return false;
+        return true;
+      });
+      const visible = sortRows(activeRows);
+
+      const label = categoryTab === "fruit" ? "fruit" : "vegetable";
+      fillTableBody(
+        tbody,
+        visible,
+        `No ${label} promotions match your filters.`,
+      );
+
+      const endedRows = sortRows(
+        ROWS.filter((row) => {
+          if (!isEndedRow(row)) return false;
+          return matchesSharedFilters(row, q);
+        }),
+      );
+      fillTableBody(
+        endedTbody,
+        endedRows,
+        `No ended ${label} promotions match your filters.`,
+      );
+
+      const endedTotal = ROWS.filter((r) => isEndedRow(r)).length;
+      const endedInTab = ROWS.filter(
+        (r) => r.category === categoryTab && isEndedRow(r),
+      ).length;
+      endedCountEl.textContent = String(endedInTab);
+      endedSection.hidden = endedTotal === 0;
+
+      const inTab = ROWS.filter(
+        (r) => r.category === categoryTab && !isEndedRow(r),
+      ).length;
       countEl.textContent = `${visible.length} of ${inTab} in tab`;
-      document.querySelectorAll("th[data-key]").forEach((th) => {
+      document.querySelectorAll("#promo-table th[data-key]").forEach((th) => {
         th.dataset.sortDir = th.dataset.key === sortKey ? sortDir : "";
       });
       updateFilterSelectStyles();

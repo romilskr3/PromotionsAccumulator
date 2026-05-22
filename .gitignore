@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 venv/
 .env
+.deps/
 leaflets/**/*
 !leaflets/README.md
 *.egg-info/

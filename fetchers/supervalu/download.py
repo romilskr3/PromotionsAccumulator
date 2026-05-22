@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import date
 from pathlib import Path
 
 import fitz
@@ -10,9 +9,9 @@ import requests
 from fetchers._shared.http import get
 from fetchers._shared.leaflet_cache import (
     best_cached_week_dir,
-    dublin_today,
     is_stale,
     week_dir,
+    week_promo_dates,
     write_meta,
     write_publication,
 )
@@ -51,26 +50,39 @@ def download_leaflet(*, refresh: bool = False) -> Path | None:
             reason=f"PDF download failed ({pdf_url}): {exc}",
         )
 
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    promo_from, promo_until = parse_dates_from_pdf(doc)
-    doc.close()
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        promo_from, promo_until = parse_dates_from_pdf(doc)
+        doc.close()
+    except Exception as exc:
+        return _use_cache(
+            cache,
+            reason=f"could not read SuperValu PDF ({exc})",
+        )
+
     if not promo_from or not promo_until:
         return _use_cache(
             cache,
-            reason="could not read promo dates from downloaded PDF",
-        )
-
-    today = dublin_today()
-    if promo_until < today:
-        return _use_cache(
-            cache,
-            reason=(
-                f"online leaflet PA{info.leaflet_id} ended {promo_until.isoformat()} "
-                f"(today {today.isoformat()})"
-            ),
+            reason="could not parse promo dates from downloaded PDF",
         )
 
     path = week_dir("supervalu", promo_from, promo_until)
+    cache_bounds = week_promo_dates(cache) if cache else None
+    if (
+        not refresh
+        and cache
+        and cache != path
+        and cache_bounds
+        and cache_bounds[1] > promo_until
+    ):
+        logger.info(
+            "Keeping newer cached SuperValu leaflet %s (online PA%s ends %s)",
+            cache.name,
+            info.leaflet_id,
+            promo_until.isoformat(),
+        )
+        return cache
+
     if not refresh and not is_stale(path) and (path / "leaflet.pdf").exists():
         logger.info("Using cached SuperValu leaflet %s", path.name)
         return path

@@ -1,18 +1,18 @@
-# Generated: 2026-06-09T12:21+01:00
+# Generated: 2026-06-09T17:07+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
-Aldi,Baby Snack Cucumbers,200 g,€1.29,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
+Aldi,Baby Snack Cucumbers,200 g,€0.99,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
 Aldi,Irish Chestnut Mushrooms,250 g,€0.79,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
-Aldi,Joya Apples,6 pack,€0.79,04/06,17/06,Live,True,fruit,2026-06-04,2026-06-17
-Aldi,Loose Avocado,Each,€0.49,04/06,17/06,Live,True,fruit,2026-06-04,2026-06-17
-Aldi,Loose Red Pepper,Each,€0.79,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
-Aldi,Salad Tomatoes,6 pack,€1.29,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
+Aldi,Joya Apples,6 pack,€1.49,04/06,17/06,Live,True,fruit,2026-06-04,2026-06-17
+Aldi,Loose Avocado,Each,€0.79,04/06,17/06,Live,True,fruit,2026-06-04,2026-06-17
+Aldi,Loose Red Pepper,Each,€0.49,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
+Aldi,Salad Tomatoes,6 pack,€0.79,04/06,17/06,Live,True,vegetable,2026-06-04,2026-06-17
 Aldi,Loose Ready to Eat Avocado,Each,€0.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Mango,Each,€0.59,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Microwaveable Baby Potatoes,400 g,€0.49,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20
 Aldi,Oranges,4 pack,€1.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Shallots,300 g,€0.49,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20
 Aldi,Snack Bite Peppers,250 g,€0.79,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20
-Aldi,Baby Plum Tomatoes,250 g,€1.49,21/05,03/06,Ended,False,vegetable,2026-05-21,2026-06-03
+Aldi,Baby Plum Tomatoes,250 g,€0.79,21/05,03/06,Ended,False,vegetable,2026-05-21,2026-06-03
 Aldi,Broccoli,500 g,€0.49,21/05,03/06,Ended,False,vegetable,2026-05-21,2026-06-03
 Aldi,Brown Onions,1 kg,€0.49,21/05,03/06,Ended,False,vegetable,2026-05-21,2026-06-03
 Aldi,Loose Conference Pear,Each,€0.29,21/05,03/06,Ended,False,fruit,2026-05-21,2026-06-03

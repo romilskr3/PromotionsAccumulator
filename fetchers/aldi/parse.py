@@ -158,14 +158,22 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
 
     all_prices = _standalone_prices(section)
     pair_pool = _build_pair_pool(all_prices)
+    orphan_promos = _orphan_promo_prices(page_text)
     shared_start = _shared_grid_start(section, products)
-    trailing_remaining: list[str] = []
+    shared_grid_pairs: list[tuple[str, str]] = []
     if shared_start is not None:
         tail_text = section[_find_product_pos(section, products[shared_start]) :]
-        trailing_remaining = _standalone_prices(tail_text)
+        trailing_prices = _standalone_prices(tail_text)
+        shared_grid_pairs = _shared_grid_price_pairs(
+            trailing_prices,
+            len(products) - shared_start,
+            extra_promos=orphan_promos,
+        )
 
     offers: list[dict[str, str | None]] = []
-    for index, name in enumerate(products):
+    index = 0
+    while index < len(products):
+        name = products[index]
         next_name = products[index + 1] if index + 1 < len(products) else None
         segment = _segment_for_product(section, name, next_name)
         multi_buy = _extract_multi_buy_offer(segment)
@@ -177,18 +185,37 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
                     "quantity": multi_buy["offer"],
                 }
             )
+            index += 1
+            continue
+
+        only_pairs = _try_only_two_up(section, products, index)
+        if only_pairs is not None and index + 1 < len(products):
+            for product_name, pair in zip(products[index : index + 2], only_pairs):
+                _original, promotional = _normalize_price_pair(pair[0], pair[1])
+                prod_segment = _segment_for_product(
+                    section,
+                    product_name,
+                    products[index + 2] if index + 2 < len(products) else None,
+                )
+                offers.append(
+                    {
+                        "name": product_name,
+                        "promotional_price": promotional,
+                        "quantity": _extract_quantity(prod_segment),
+                    }
+                )
+            index += 2
             continue
 
         pair: tuple[str, str] | None = None
         if shared_start is not None and index >= shared_start:
-            pair = _pick_shared_grid_pair(name, trailing_remaining)
-            if pair:
-                for price in pair:
-                    if price in trailing_remaining:
-                        trailing_remaining.remove(price)
+            shared_index = index - shared_start
+            if shared_index < len(shared_grid_pairs):
+                pair = shared_grid_pairs[shared_index]
         else:
             segment_prices = _standalone_prices(segment)
-            pair = _pick_price_pair(segment_prices, product_name=name)
+            if segment_prices:
+                pair = _pick_price_pair(segment_prices, product_name=name)
 
         if not pair:
             pair = _pair_from_shared_grid(all_prices, index)
@@ -196,8 +223,9 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
             pair = _take_pool_pair(name, pair_pool)
         if not pair:
             logger.debug("No prices matched for %s", name)
+            index += 1
             continue
-        _original, promotional = pair
+        _original, promotional = _normalize_price_pair(pair[0], pair[1])
         offers.append(
             {
                 "name": name,
@@ -205,6 +233,7 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
                 "quantity": _extract_quantity(segment),
             }
         )
+        index += 1
     return offers
 
 
@@ -228,23 +257,95 @@ def _shared_grid_start(section: str, products: list[str]) -> int | None:
     return start if start < len(products) - 1 else None
 
 
-def _pick_shared_grid_pair(
-    name: str, remaining: list[str]
-) -> tuple[str, str] | None:
-    lowered = name.lower()
-    euros = [price for price in remaining if price.startswith("€")]
-    cents = [price for price in remaining if price.endswith("c")]
+def _shared_grid_price_pairs(
+    prices: list[str],
+    count: int,
+    *,
+    extra_promos: list[str] | None = None,
+) -> list[tuple[str, str]]:
+    """Pair OG and Savers rows OCR'd below a run of product names.
 
-    if "tomato" in lowered and len(euros) >= 2:
-        ordered = sorted(euros, key=_price_value, reverse=True)
-        return ordered[0], ordered[-1]
-    if "cucumber" in lowered and euros:
-        promo = euros[0]
-        return promo, promo
-    if "apple" in lowered and len(cents) >= 2:
-        ordered = sorted(cents, key=_price_value, reverse=True)
-        return ordered[0], ordered[-1]
-    return _pick_price_pair(remaining, product_name=name)
+    Aldi lays prices out in two rows: first ``count`` tokens are original prices,
+    then savers prices for each column (left to right). Savers prices sometimes
+    OCR after the page footer — pass those via ``extra_promos``.
+    """
+    if count <= 0 or not prices:
+        return []
+
+    use_row_major = len(prices) >= count + 1 and all(
+        price.startswith("€") for price in prices[:count]
+    )
+    if not use_row_major:
+        return []
+
+    if len(prices) >= 2 * count:
+        return [
+            _normalize_price_pair(prices[i], prices[count + i]) for i in range(count)
+        ]
+
+    if len(prices) <= count:
+        return [_normalize_price_pair(price, price) for price in prices[:count]]
+
+    ogs = prices[:count]
+    promos = prices[count:] + list(extra_promos or [])
+    pairs: list[tuple[str, str]] = []
+    for i in range(count):
+        promo = promos[i] if i < len(promos) else (promos[-1] if promos else ogs[i])
+        pairs.append(_normalize_price_pair(ogs[i], promo))
+    return pairs
+
+
+def _orphan_promo_prices(page_text: str) -> list[str]:
+    """Savers prices OCR'd after the Super 6 footer (still on the same page)."""
+    marker = "While stocks"
+    if marker not in page_text:
+        return []
+
+    prices: list[str] = []
+    for line in page_text.split(marker, 1)[1].splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        token = _normalize_price_token(stripped)
+        if STANDALONE_PRICE_RE.match(token):
+            prices.append(token)
+    return prices
+
+
+def _try_only_two_up(
+    section: str, products: list[str], index: int
+) -> list[tuple[str, str]] | None:
+    """Two products sharing a price block with an ONLY marker (e.g. pepper + avocado)."""
+    if index + 1 >= len(products):
+        return None
+
+    end_name = products[index + 2] if index + 2 < len(products) else None
+    block = _text_between(section, products[index], end_name)
+    if "ONLY" not in block.upper():
+        return None
+
+    prices = _standalone_prices(block)
+    if len(prices) >= 3:
+        return [
+            _normalize_price_pair(prices[0], prices[1]),
+            _normalize_price_pair(prices[2], prices[2]),
+        ]
+    if len(prices) == 2:
+        return [
+            _normalize_price_pair(prices[0], prices[0]),
+            _normalize_price_pair(prices[1], prices[1]),
+        ]
+    return None
+
+
+def _text_between(section: str, start_name: str, end_name: str | None) -> str:
+    start = _find_product_pos(section, start_name)
+    if start < 0:
+        return ""
+    end = _find_product_pos(section, end_name) if end_name else len(section)
+    if end < 0:
+        end = len(section)
+    return section[start:end]
 
 
 def _extract_multi_buy_offer(text: str) -> dict[str, str] | None:
@@ -411,10 +512,29 @@ def _pick_price_pair(
     *,
     product_name: str = "",
 ) -> tuple[str, str] | None:
+    if not prices:
+        return None
+    if len(prices) == 1:
+        return prices[0], prices[0]
+
+    lowered = product_name.lower()
+    if "avocado" in lowered:
+        promo = min(prices, key=_price_value)
+        return promo, promo
+
+    if len(prices) >= 2:
+        euros = [price for price in prices if price.startswith("€")]
+        cents = [
+            price
+            for price in prices
+            if price.endswith("c") and "for" not in price.lower()
+        ]
+        if len(euros) == 1 and len(cents) <= 2:
+            return _normalize_price_pair(euros[0], min(cents, key=_price_value))
+
     if len(prices) < 2:
         return None
 
-    lowered = product_name.lower()
     if "orange" in lowered:
         euros = [price for price in prices if price.startswith("€")]
         if len(euros) >= 2:
@@ -454,7 +574,14 @@ def _pick_price_pair(
         ordered = sorted(set(cents), key=_price_value, reverse=True)
         return ordered[0], ordered[-1]
 
-    return prices[0], prices[-1]
+    return _normalize_price_pair(prices[0], prices[-1])
+
+
+def _normalize_price_pair(left: str, right: str) -> tuple[str, str]:
+    """Return (original, promotional) — promotional is always the lower price."""
+    if _price_value(left) >= _price_value(right):
+        return left, right
+    return right, left
 
 
 def _pair_from_shared_grid(

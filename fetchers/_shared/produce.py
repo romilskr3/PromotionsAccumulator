@@ -6,17 +6,17 @@ import re
 
 PRODUCE_KEYWORDS = re.compile(
     r"\b("
-    r"fruit|vegetable|veg\b|salad|herb|berry|berries|apple|banana|orange|"
-    r"lemon|lime|grape|melon|watermelon|pineapple|mango|peach|pear|plum|"
+    r"fruit|vegetable|veg\b|salad|herb|berry|berries|apple|banana(?:s)?|orange|"
+    r"lemon|lime|grape|melon|watermelon|pineapple|mango|peach(?:es)?|pear|plum|"
     r"cherry|strawberr(?:y|ies)?|blueberr(?:y|ies)?|raspberr(?:y|ies)?|"
     r"blackberr(?:y|ies)?|avocado|tomato(?:es)?|"
-    r"potato(?:es)?|carrot(?:s)?|onion(?:s)?|garlic|pepper(?:s)?|cucumber|courgette|zucchini|"
+    r"potato(?:es)?|carrot(?:s)?|onion(?:s)?|garlic|pepper(?:s)?|cucumber(?:s)?|courgette|zucchini|"
     r"pears?|apples?|oranges?|shallots?|mushrooms?|"
     r"aubergine|eggplant|broccoli|cauliflower|cabbage|lettuce|spinach|"
     r"kale|celery|beetroot|beet|radish|turnip|parsnip|swede|leek|"
     r"mushroom|ginger|spring\s+onion|scallion|shallot|beans|peas|"
     r"sweetcorn|corn\s+on|asparagus|artichoke|rhubarb|fig|kiwi|"
-    r"pomegranate|nectarine|apricot|coconut|grapefruit|satsuma|"
+    r"pomegranate|nectarine(?:s)?|apricot(?:s)?|coconut|grapefruit|satsuma|"
     r"clementine|mandarin|organic\s+produce|fresh\s+produce"
     r")\b",
     re.IGNORECASE,

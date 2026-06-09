@@ -59,7 +59,7 @@ def _row_to_promotion(row: dict[str, str]) -> Promotion | None:
         promotion_until=promo_until,
         source="csv-cache",
         quantity=quantity,
-    )
+    ).with_normalized_dates()
 
 
 def promotions_by_supermarket(

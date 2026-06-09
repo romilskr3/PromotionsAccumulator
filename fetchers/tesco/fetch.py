@@ -5,6 +5,7 @@ import logging
 from fetchers._shared.dedupe import dedupe_by_product_week
 from fetchers._shared.models import Promotion
 from fetchers.tesco import fresh_4, parse
+from fetchers.tesco.constants import MIN_FRESH_4_ITEMS
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +23,14 @@ def fetch_promotions(
     promotions = parse.parse_cached()
     if not promotions:
         logger.warning(
-            "No Tesco promotions in cache. Run: python scripts/save_tesco_session.py "
-            "then python scripts/update_promotions.py --store tesco"
+            "No Tesco promotions in cache. Run: "
+            "python scripts/update_promotions.py --store tesco --refresh-leaflets"
         )
-    elif len(promotions) < 4:
-        logger.warning("Expected 4 Tesco Fresh 4 items, got %d", len(promotions))
+    elif len(promotions) < MIN_FRESH_4_ITEMS:
+        logger.warning(
+            "Expected at least %d Tesco Fresh 4 items, got %d",
+            MIN_FRESH_4_ITEMS,
+            len(promotions),
+        )
 
     return dedupe_by_product_week(promotions)

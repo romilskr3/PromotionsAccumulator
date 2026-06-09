@@ -67,4 +67,4 @@ def merge_with_previous_csv(
         if store_name not in refreshed_stores:
             merged.extend(rows)
 
-    return merged
+    return [p.with_normalized_dates() for p in merged]

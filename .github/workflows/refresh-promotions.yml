@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          playwright install --with-deps chromium
+          playwright install --with-deps chrome
 
       - name: Cache SuperValu leaflet PDF
         uses: actions/cache@v4
@@ -39,17 +39,28 @@ jobs:
           restore-keys: |
             supervalu-leaflet-${{ runner.os }}-
 
-      - name: Restore Tesco browser session (optional)
-        env:
-          TESCO_STORAGE_STATE_B64: ${{ secrets.TESCO_STORAGE_STATE_B64 }}
-        run: |
-          if [ -n "$TESCO_STORAGE_STATE_B64" ]; then
-            mkdir -p leaflets/tesco
-            echo "$TESCO_STORAGE_STATE_B64" | base64 -d > leaflets/tesco/storage-state.json
-          fi
-
       - name: Fetch promotions and update outputs
         run: python3 scripts/update_promotions.py --refresh-leaflets
+
+      - name: Verify Tesco Fresh 4 refreshed
+        run: |
+          python3 - <<'PY'
+          import csv
+          from pathlib import Path
+
+          rows = list(csv.DictReader(Path("output/promotions.csv").open()))
+          live = [
+              r for r in rows
+              if r.get("Supermarket") == "Tesco"
+              and r.get("Status") == "Live"
+          ]
+          if not live:
+              raise SystemExit(
+                  "No Live Tesco Fresh 4 rows after refresh. "
+                  "Check fetchers/tesco and Playwright Chrome install."
+              )
+          print(f"Tesco: {len(live)} live promotion(s)")
+          PY
 
       - name: Commit and push
         run: |

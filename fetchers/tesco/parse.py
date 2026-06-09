@@ -7,30 +7,36 @@ from typing import Any
 
 from fetchers._shared.leaflet_cache import list_week_dirs, read_meta, read_publication
 from fetchers._shared.models import Promotion
-from fetchers.tesco.constants import EXPECTED_ITEMS, FRESH_4_URL
+from fetchers.tesco.constants import MIN_FRESH_4_ITEMS, FRESH_4_URL
 
 logger = logging.getLogger(__name__)
 
-DATE_RANGE_RE = re.compile(
-    r"Offer valid for delivery from (\d{2}/\d{2}/\d{4}) until (\d{2}/\d{2}/\d{4})",
-    re.IGNORECASE,
+ITEM_RE = re.compile(
+    r"(?P<name>Tesco[^\n]+?)\s*"
+    r"(?:\n\n\d+\.\d+ \(\d+\)\s*)?"
+    r"Write a review\s+More like this\s+"
+    r"(?P<price>\d+c|€[\d.]+)\s+(?:Half Price\s+)?Clubcard Price\s+"
+    r".*?"
+    r"Offer valid for delivery from (?P<from>\d{2}/\d{2}/\d{4}) "
+    r"until (?P<until>\d{2}/\d{2}/\d{4})",
+    re.IGNORECASE | re.DOTALL,
 )
 
-ITEM_RE = re.compile(
+LEGACY_ITEM_RE = re.compile(
     r"(?P<name>[A-Z][^\n]+?)\s+Write a review\s+More like this\s+"
     r"(?:Half Price\s+)?Clubcard Price\s+(?P<price>\d+c|€[\d.]+)\s+"
     r"(?:Half Price\s+)?Clubcard Price\s+.*?"
     r"Offer valid for delivery from (?P<from>\d{2}/\d{2}/\d{4}) "
     r"until (?P<until>\d{2}/\d{2}/\d{4})",
-    re.IGNORECASE,
+    re.IGNORECASE | re.DOTALL,
 )
 
-SIMPLE_ITEM_RE = re.compile(
+LEGACY_SIMPLE_ITEM_RE = re.compile(
     r"(?P<name>[A-Z][^\n]+?)\s+Write a review\s+More like this\s+"
     r"Clubcard Price\s+(?P<price>\d+c|€[\d.]+)\s+Clubcard Price\s+.*?"
     r"Offer valid for delivery from (?P<from>\d{2}/\d{2}/\d{4}) "
     r"until (?P<until>\d{2}/\d{2}/\d{4})",
-    re.IGNORECASE,
+    re.IGNORECASE | re.DOTALL,
 )
 
 QTY_SUFFIX_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
@@ -46,13 +52,23 @@ def parse_cached() -> list[Promotion]:
     for week_path in list_week_dirs("tesco"):
         try:
             meta = read_meta(week_path)
-            publication = read_publication(week_path)
-            promo_from = date.fromisoformat(meta["promo_from"])
-            promo_until = date.fromisoformat(meta["promo_until"])
+            default_from = date.fromisoformat(meta["promo_from"])
+            default_until = date.fromisoformat(meta["promo_until"])
             source_url = meta.get("source_url", FRESH_4_URL)
+            publication = read_publication(week_path)
             for item in _products_from_publication(publication):
                 product, quantity = _normalize_product(item["name"])
                 quantity = quantity or item.get("quantity")
+                promo_from = (
+                    _parse_tesco_date(item["promotion_from"])
+                    if item.get("promotion_from")
+                    else default_from
+                )
+                promo_until = (
+                    _parse_tesco_date(item["promotion_until"])
+                    if item.get("promotion_until")
+                    else default_until
+                )
                 promotions.append(
                     Promotion(
                         supermarket="Tesco",
@@ -75,9 +91,9 @@ def parse_page_text(page_text: str) -> tuple[date | None, date | None, list[dict
     if not products:
         return None, None, []
 
-    promo_from = _parse_tesco_date(products[0]["promotion_from"])
-    promo_until = _parse_tesco_date(products[0]["promotion_until"])
-    return promo_from, promo_until, products
+    from_dates = [_parse_tesco_date(p["promotion_from"]) for p in products]
+    until_dates = [_parse_tesco_date(p["promotion_until"]) for p in products]
+    return min(from_dates), max(until_dates), products
 
 
 def _products_from_publication(publication: Any) -> list[dict[str, str]]:
@@ -94,7 +110,7 @@ def _products_from_publication(publication: Any) -> list[dict[str, str]]:
 
 def _parse_products_from_text(page_text: str) -> list[dict[str, str]]:
     products: list[dict[str, str]] = []
-    for pattern in (ITEM_RE, SIMPLE_ITEM_RE):
+    for pattern in (ITEM_RE, LEGACY_ITEM_RE, LEGACY_SIMPLE_ITEM_RE):
         for match in pattern.finditer(page_text):
             raw_name = match.group("name")
             name, quantity = _normalize_product(raw_name)
@@ -112,9 +128,11 @@ def _parse_products_from_text(page_text: str) -> list[dict[str, str]]:
         if products:
             break
 
-    if len(products) != EXPECTED_ITEMS:
+    if len(products) < MIN_FRESH_4_ITEMS:
         logger.warning(
-            "Expected %d Fresh 4 items, parsed %d", EXPECTED_ITEMS, len(products)
+            "Expected at least %d Fresh 4 items, parsed %d",
+            MIN_FRESH_4_ITEMS,
+            len(products),
         )
     return products
 

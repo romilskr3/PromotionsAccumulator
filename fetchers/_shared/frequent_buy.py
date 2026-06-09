@@ -1,14 +1,27 @@
-"""Keywords for the Vegetables tab “Favourites” filter.
+"""Default keywords for the Favourites filter on each produce tab.
 
-Edit FREQUENT_BUY_KEYWORDS, then run: python3 scripts/update_promotions.py
-and push (updates site-config.json on the live site).
+Baked into site-config.json on publish. Users can override per tab in the site
+UI (saved in the browser). Edit these lists to change defaults for new visitors.
 """
 
 from __future__ import annotations
 
-FREQUENT_BUY_KEYWORDS: list[str] = [
+VEGETABLE_FAVOURITE_KEYWORDS: list[str] = [
     "onions",
     "carrots",
     "cucumbers",
     "tomatoes",
 ]
+
+FRUIT_FAVOURITE_KEYWORDS: list[str] = [
+    "bananas",
+    "apples",
+]
+
+# Backward compatibility for older site-config consumers.
+FREQUENT_BUY_KEYWORDS: list[str] = VEGETABLE_FAVOURITE_KEYWORDS
+
+DEFAULT_FAVOURITE_KEYWORDS: dict[str, list[str]] = {
+    "vegetable": VEGETABLE_FAVOURITE_KEYWORDS,
+    "fruit": FRUIT_FAVOURITE_KEYWORDS,
+}

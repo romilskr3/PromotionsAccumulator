@@ -14,7 +14,7 @@ ProduceType = Literal["fruit", "vegetable"]
 # Checked before fruit patterns (tomato, pepper, etc.).
 VEGETABLE_FIRST = re.compile(
     r"\b("
-    r"tomato|potato|onion|shallot|pepper|cucumber|broccoli|mushroom|radish|"
+    r"tomato|potato|onion|shallot|pepper|cucumber(?:s)?|broccoli|mushroom|radish|"
     r"salad|courgette|zucchini|carrot|cabbage|lettuce|spinach|kale|celery|"
     r"beetroot|beet|turnip|parsnip|swede|leek|garlic|cauliflower|aubergine|"
     r"eggplant|asparagus|artichoke|ginger|scallion|spring\s+onion|"
@@ -26,10 +26,10 @@ VEGETABLE_FIRST = re.compile(
 FRUIT = re.compile(
     r"\b("
     r"mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|"
-    r"grapefruit|lemon|lime|grape|melon|watermelon|pineapple|peach|"
+    r"grapefruit|lemon|lime|grape|melon|watermelon|pineapple|peach(?:es)?|"
     r"strawberr(?:y|ies)?|blueberr(?:y|ies)?|raspberr(?:y|ies)?|"
     r"blackberr(?:y|ies)?|gooseberr(?:y|ies)?|cranberr(?:y|ies)?|"
-    r"banana|kiwi|fig\b|apricot|nectarine|avocado|coconut|pomegranate|"
+    r"banana(?:s)?|kiwi|fig\b|apricot(?:s)?|nectarine(?:s)?|avocado|coconut|pomegranate|"
     r"rhubarb|damson|greengage|passion\s*fruit|physalis|lychee|papaya|"
     r"guava|persimmon|dragon\s*fruit|starfruit|currant"
     r")\b",

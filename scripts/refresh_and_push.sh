@@ -3,7 +3,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-python3 scripts/update_promotions.py --refresh-leaflets "$@"
+PYTHON=".venv/bin/python3"
+if [ ! -x "$PYTHON" ]; then
+  PYTHON=python3
+fi
+
+"$PYTHON" scripts/update_promotions.py --refresh-leaflets "$@"
 
 git add output/ docs/
 if git diff --staged --quiet; then

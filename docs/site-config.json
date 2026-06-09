@@ -8,5 +8,17 @@
     "carrots",
     "cucumbers",
     "tomatoes"
-  ]
+  ],
+  "favouriteKeywords": {
+    "vegetable": [
+      "onions",
+      "carrots",
+      "cucumbers",
+      "tomatoes"
+    ],
+    "fruit": [
+      "bananas",
+      "apples"
+    ]
+  }
 }

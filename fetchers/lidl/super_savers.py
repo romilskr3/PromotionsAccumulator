@@ -18,6 +18,7 @@ GRID_DATA_RE = re.compile(r'data-grid-data="([^"]+)"')
 RIBBON_RANGE_RE = re.compile(
     r"(\d{1,2})\.(\d{1,2})\s*-\s*(\d{1,2})\.(\d{1,2})"
 )
+RIBBON_FROM_RE = re.compile(r"From\s+(\d{1,2})\.(\d{1,2})", re.IGNORECASE)
 
 
 def fetch_super_savers(
@@ -121,13 +122,14 @@ def _item_to_promotion(
         source="super_savers",
         url=url or None,
         quantity=quantity,
-    )
+    ).with_normalized_dates()
 
 
 def _has_week_ribbon(gridbox: dict) -> bool:
     for ribbon in gridbox.get("ribbons") or []:
         text = ribbon.get("text") if isinstance(ribbon, dict) else str(ribbon)
-        if RIBBON_RANGE_RE.search(text or ""):
+        text = text or ""
+        if RIBBON_RANGE_RE.search(text) or RIBBON_FROM_RE.search(text):
             return True
     return False
 
@@ -144,12 +146,11 @@ def _resolve_dates(
     this_week: WeekWindow | None,
     next_week: WeekWindow | None,
 ) -> tuple[date | None, date | None]:
-    # Ribbon text (e.g. "21.05 - 27.05") matches the leaflet week, unlike
-    # storeStartDate which can fall on the last day of the previous cycle.
+    # Ribbon text (e.g. "21.05 - 27.05" or "From 04.06") matches the leaflet week.
     for ribbon in gridbox.get("ribbons") or []:
         text = ribbon.get("text") if isinstance(ribbon, dict) else str(ribbon)
-        parsed = _dates_from_ribbon(text, weeks, week_by_range)
-        if parsed:
+        parsed = _ribbon_dates(text, weeks, week_by_range)
+        if parsed[0] is not None:
             return parsed
 
     store_start = gridbox.get("storeStartDate")
@@ -166,15 +167,27 @@ def _resolve_dates(
     return None, None
 
 
-def _dates_from_ribbon(
+def _ribbon_dates(
     text: str,
     weeks: list[WeekWindow],
     week_by_range: dict[tuple[date, date], WeekWindow],
-) -> tuple[date, date] | None:
-    match = RIBBON_RANGE_RE.search(text or "")
-    if not match:
-        return None
+) -> tuple[date | None, date | None]:
+    text = text or ""
+    match = RIBBON_RANGE_RE.search(text)
+    if match:
+        return _dates_from_range_ribbon(match, weeks)
 
+    from_match = RIBBON_FROM_RE.search(text)
+    if from_match:
+        return _dates_from_start_ribbon(from_match, weeks)
+
+    return None, None
+
+
+def _dates_from_range_ribbon(
+    match: re.Match[str],
+    weeks: list[WeekWindow],
+) -> tuple[date | None, date | None]:
     start_day, start_month, end_day, end_month = (int(x) for x in match.groups())
 
     for week in weeks:
@@ -187,15 +200,41 @@ def _dates_from_ribbon(
             return week.promo_from, week.promo_until
 
     if not weeks:
-        return None
+        return None, None
 
     year = weeks[0].promo_from.year
     promo_from = date(year, start_month, start_day)
     promo_until = date(year, end_month, end_day)
     if promo_until < promo_from:
-        promo_until = date(year + 1, end_month, end_day)
+        if start_month == end_month:
+            # e.g. 28.05 - 03.05 on the leaflet means 28 May – 3 June.
+            next_month = start_month + 1
+            if next_month > 12:
+                promo_until = date(year + 1, 1, end_day)
+            else:
+                promo_until = date(year, next_month, end_day)
+        else:
+            promo_until = date(year + 1, end_month, end_day)
 
     return _snap_to_catalogue_week(promo_from, promo_until, weeks)
+
+
+def _dates_from_start_ribbon(
+    match: re.Match[str],
+    weeks: list[WeekWindow],
+) -> tuple[date | None, date | None]:
+    """Ribbon like 'From 04.06' — start of a Thu–Wed catalogue week."""
+    start_day, start_month = (int(x) for x in match.groups())
+    for week in weeks:
+        if week.promo_from.day == start_day and week.promo_from.month == start_month:
+            return week.promo_from, week.promo_until
+
+    if not weeks:
+        return None, None
+
+    year = weeks[0].promo_from.year
+    promo_from = date(year, start_month, start_day)
+    return _snap_to_catalogue_week(promo_from, promo_from, weeks)
 
 
 def _snap_to_catalogue_week(

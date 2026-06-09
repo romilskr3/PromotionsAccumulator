@@ -38,6 +38,13 @@ DATE_RANGE_RE = re.compile(
     re.IGNORECASE,
 )
 
+SAME_MONTH_DATE_RE = re.compile(
+    r"Offers valid from Thursday\s+(\d{1,2})(?:st|nd|rd|th)?\s*-\s*"
+    r"Wednesday\s+(\d{1,2})(?:st|nd|rd|th)?\s+"
+    r"([A-Za-z]+)\s+(\d{4})",
+    re.IGNORECASE,
+)
+
 UNTIL_ONLY_RE = re.compile(
     r"Offers Valid until Wednesday\s+(\d{1,2})(?:st|nd|rd|th)?\s+"
     r"([A-Za-z]+)\s+(\d{4})",
@@ -46,6 +53,7 @@ UNTIL_ONLY_RE = re.compile(
 
 FRESH_PAGE_MARKERS = (
     "save up to 50% on fresh favourites",
+    "save up to 56% on fresh favourites",
     "super fresh5",
     "super fresh 5",
     "irish strawberries",
@@ -63,6 +71,7 @@ SAVE_HEADER_RE = re.compile(r"^Save\s+(\d+)%\s*$", re.IGNORECASE)
 NOW_HEADER_RE = re.compile(r"^NOW\s*$", re.IGNORECASE)
 PRICE_LINE_RE = re.compile(r"^([\d.]+c|€[\d.]+)\s*$", re.IGNORECASE)
 PRODUCT_START_RE = re.compile(r"^SuperValu\b", re.IGNORECASE)
+TEASER_PRODUCT_START_RE = re.compile(r"^(SuperValu|Fyffes)\b", re.IGNORECASE)
 STRAWBERRY_BLOCK_RE = re.compile(
     r"SuperValu Signature Tastes\s+Super Sweet Irish Strawberries",
     re.IGNORECASE,
@@ -136,10 +145,14 @@ def parse_leaflets() -> list[Promotion]:
 
 def parse_dates_from_pdf(doc: fitz.Document) -> tuple[date | None, date | None]:
     combined = "\n".join(page.get_text() for page in doc)
-    match = DATE_RANGE_RE.search(combined.replace("\n", " "))
+    normalized = combined.replace("\n", " ")
+    match = DATE_RANGE_RE.search(normalized)
     if match:
         return _dates_from_range_match(match)
-    match = UNTIL_ONLY_RE.search(combined.replace("\n", " "))
+    match = SAME_MONTH_DATE_RE.search(normalized)
+    if match:
+        return _dates_from_same_month_match(match)
+    match = UNTIL_ONLY_RE.search(normalized)
     if match:
         return _dates_from_until_only(match)
     return None, None
@@ -209,15 +222,146 @@ def _page_week_window(
 def _extract_products(text: str) -> list[dict[str, str]]:
     items: list[dict[str, str]] = []
     lowered = text.lower()
-    if (
-        "save up to 50% on fresh favourites" in lowered
-        and "fresh picks" in lowered
+    if any(
+        marker in lowered
+        for marker in (
+            "save up to 50% on fresh favourites",
+            "save up to 56% on fresh favourites",
+        )
     ):
-        start = lowered.index("save up to 50% on fresh favourites")
-        items.extend(_parse_super_fresh_block(text[start:]))
+        if "fresh picks" in lowered:
+            start = lowered.index("save up to")
+            items.extend(_parse_super_fresh_block(text[start:]))
+        else:
+            items.extend(_parse_teaser_fresh_block(text))
     if "irish strawberries" in lowered and STRAWBERRY_BLOCK_RE.search(text):
         items.extend(_parse_strawberry_block(text))
     return items
+
+
+def _parse_teaser_fresh_block(text: str) -> list[dict[str, str]]:
+    """Parse short teaser leaflets where prices sit above/below Save % product tiles."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    start = 0
+    for idx, line in enumerate(lines):
+        if "fresh favourites" in line.lower():
+            start = idx
+            break
+    end = len(lines)
+    for idx in range(start + 1, len(lines)):
+        if lines[idx].upper() == "SUPER" and idx + 1 < len(lines) and lines[idx + 1].upper().startswith("FRESH5"):
+            end = idx
+            break
+        if re.match(r"^(Fresh Meats|REAL REWARDS|Now €)", lines[idx], re.IGNORECASE):
+            end = idx
+            break
+    section = lines[start:end]
+
+    blocks = _collect_teaser_blocks(section)
+    if not blocks:
+        return []
+
+    price_hits = _collect_teaser_price_hits(section)
+    used: set[int] = set()
+    items: list[dict[str, str]] = []
+
+    for block_idx, block in enumerate(blocks):
+        save_idx = block["save"]
+        end_idx = block["end"]
+        prev_save = blocks[block_idx - 1]["save"] if block_idx else -1
+        before = [
+            (idx, price)
+            for idx, price in price_hits
+            if idx < save_idx and idx not in used
+        ]
+        after = [
+            (idx, price)
+            for idx, price in price_hits
+            if idx >= end_idx and idx not in used
+        ]
+        pick: tuple[int, str] | None = None
+        if before:
+            narrowed = [(idx, price) for idx, price in before if idx > prev_save]
+            if block_idx == 0:
+                pick = before[0]
+            elif narrowed:
+                pick = narrowed[-1]
+            elif block_idx < len(blocks) - 2:
+                pick = before[-1]
+        if pick is None and after:
+            if block_idx == len(blocks) - 1:
+                pick = after[0]
+            elif block_idx == len(blocks) - 2:
+                pick = after[-1]
+            else:
+                pick = after[0]
+        if pick:
+            used.add(pick[0])
+            items.append({"product": block["product"], "price": pick[1]})
+    return items
+
+
+def _collect_teaser_price_hits(section: list[str]) -> list[tuple[int, str]]:
+    hits: list[tuple[int, str]] = []
+    for idx, line in enumerate(section):
+        if NOW_HEADER_RE.match(line):
+            price = _price_before_now(section, idx) or _price_after_now(section, idx)
+            if price:
+                hits.append((idx, price))
+        elif (
+            PRICE_LINE_RE.match(line)
+            and idx + 1 < len(section)
+            and section[idx + 1].lower().startswith("was ")
+        ):
+            hits.append((idx, line))
+    return hits
+
+
+def _collect_teaser_blocks(section: list[str]) -> list[dict[str, int | str]]:
+    blocks: list[dict[str, int | str]] = []
+    i = 0
+    while i < len(section):
+        line = section[i]
+        inline = re.match(
+            r"^Save\s+\d+%\s+(?P<name>(?:SuperValu|Fyffes).+)$",
+            line,
+            re.IGNORECASE,
+        )
+        if inline:
+            blocks.append({"save": i, "end": i + 1, "product": inline.group("name")})
+            i += 1
+            continue
+        if re.match(r"^Save\s+\d+%$", line, re.IGNORECASE):
+            j = i + 1
+            if j >= len(section) or not TEASER_PRODUCT_START_RE.match(section[j]):
+                i += 1
+                continue
+            name_parts = [section[j]]
+            j += 1
+            while j < len(section):
+                nxt = section[j]
+                if (
+                    PRODUCT_LINE_STOP_RE.match(nxt)
+                    or re.match(r"^Save\s+\d+%", nxt, re.IGNORECASE)
+                    or NOW_HEADER_RE.match(nxt)
+                    or PRICE_LINE_RE.match(nxt)
+                    or TEASER_PRODUCT_START_RE.match(nxt)
+                ):
+                    break
+                if not nxt.lower().startswith("was "):
+                    name_parts.append(nxt)
+                j += 1
+            blocks.append({"save": i, "end": j, "product": " ".join(name_parts)})
+            i = j
+            continue
+        i += 1
+    return blocks
+
+
+def _price_before_now(lines: list[str], now_index: int) -> str | None:
+    if now_index > 0 and PRICE_LINE_RE.match(lines[now_index - 1]):
+        return lines[now_index - 1]
+    return None
 
 
 def _parse_super_fresh_block(text: str) -> list[dict[str, str]]:
@@ -380,6 +524,14 @@ def _quantity_from_name(product: str) -> str | None:
         return "Each"
 
     return None
+
+
+def _dates_from_same_month_match(match: re.Match[str]) -> tuple[date, date]:
+    thu_day, wed_day, month_name, year = match.groups()
+    month = MONTHS[month_name[:3].lower()]
+    promo_from = date(int(year), month, int(thu_day))
+    promo_until = date(int(year), month, int(wed_day))
+    return promo_from, promo_until
 
 
 def _dates_from_range_match(match: re.Match[str]) -> tuple[date, date]:

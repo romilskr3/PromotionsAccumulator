@@ -149,22 +149,246 @@ SITE_HTML = r"""<!DOCTYPE html>
       align-items: center;
       margin-bottom: 0.85rem;
     }
-    .favourites-wrap { display: none; }
-    .favourites-wrap.visible { display: block; }
+    .count {
+      color: var(--muted);
+      font-size: 0.875rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 6.75rem;
+      text-align: right;
+    }
+    .favourites-wrap {
+      display: flex;
+      flex-shrink: 0;
+    }
+    .favourites-control {
+      display: inline-flex;
+      align-items: stretch;
+      flex-shrink: 0;
+      border: 1px solid var(--veg);
+      border-radius: 10px;
+      background: var(--card);
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(22, 101, 52, 0.1);
+    }
+    .favourites-control.is-active {
+      border-color: #15803d;
+      background: var(--veg);
+    }
     #favourites-btn {
       font: inherit;
       font-size: 0.875rem;
       font-weight: 600;
-      padding: 0.45rem 0.85rem;
-      border: 1px solid var(--veg);
-      border-radius: 8px;
-      background: var(--card);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      min-width: 7rem;
+      padding: 0.45rem 0.75rem;
+      border: none;
+      background: transparent;
       color: var(--veg);
       cursor: pointer;
     }
-    #favourites-btn[aria-pressed="true"] {
+    #favourites-btn:focus-visible,
+    #favourites-edit-btn:focus-visible {
+      outline: 2px solid rgba(37, 99, 235, 0.55);
+      outline-offset: -2px;
+    }
+    #favourites-btn .favourites-star {
+      font-size: 0.95rem;
+      line-height: 1;
+      opacity: 0.85;
+    }
+    .favourites-control.is-active #favourites-btn {
+      color: #fff;
+    }
+    .favourites-control.is-active #favourites-btn .favourites-star {
+      opacity: 1;
+    }
+    .favourites-divider {
+      width: 1px;
+      align-self: stretch;
+      background: rgba(22, 101, 52, 0.18);
+      flex-shrink: 0;
+    }
+    .favourites-control.is-active .favourites-divider {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    #favourites-edit-btn {
+      font: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--veg);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #favourites-edit-btn svg {
+      width: 1rem;
+      height: 1rem;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #favourites-edit-btn:hover {
+      background: var(--veg-soft);
+    }
+    .favourites-control.is-active #favourites-edit-btn {
+      color: #fff;
+    }
+    .favourites-control.is-active #favourites-edit-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .favourites-control.is-fruit {
+      border-color: var(--fruit);
+      box-shadow: 0 1px 2px rgba(234, 88, 12, 0.12);
+    }
+    .favourites-control.is-fruit #favourites-btn,
+    .favourites-control.is-fruit #favourites-edit-btn {
+      color: var(--fruit);
+    }
+    .favourites-control.is-fruit .favourites-divider {
+      background: rgba(234, 88, 12, 0.2);
+    }
+    .favourites-control.is-fruit #favourites-edit-btn:hover {
+      background: var(--fruit-soft);
+    }
+    .favourites-control.is-fruit.is-active {
+      border-color: #c2410c;
+      background: var(--fruit);
+    }
+    .favourites-control.is-fruit.is-active #favourites-btn,
+    .favourites-control.is-fruit.is-active #favourites-edit-btn {
+      color: #fff;
+    }
+    .favourites-control.is-fruit.is-active .favourites-divider {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .favourites-control.is-fruit.is-active #favourites-edit-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .favourites-dialog {
+      border: none;
+      border-radius: 14px;
+      padding: 0;
+      max-width: 420px;
+      width: calc(100% - 2rem);
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+    }
+    .favourites-dialog::backdrop {
+      background: rgba(15, 23, 42, 0.35);
+    }
+    .favourites-dialog-inner {
+      padding: 1.1rem 1.15rem 1rem;
+    }
+    .favourites-dialog h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.1rem;
+    }
+    .favourites-help {
+      margin: 0 0 0.85rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .favourites-list {
+      list-style: none;
+      margin: 0 0 0.85rem;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .favourites-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fafbfc;
+      font-size: 0.9rem;
+    }
+    .favourites-list .remove-kw {
+      font: inherit;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0.15rem 0.35rem;
+      border-radius: 6px;
+    }
+    .favourites-list .remove-kw:hover {
+      background: #fee2e2;
+      color: #b42318;
+    }
+    .favourites-add {
+      display: flex;
+      gap: 0.45rem;
+      margin-bottom: 0.85rem;
+    }
+    .favourites-add input {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      font-size: 0.95rem;
+      padding: 0.45rem 0.65rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .favourites-add button {
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.875rem;
+      padding: 0.45rem 0.85rem;
+      border: none;
+      border-radius: 8px;
       background: var(--veg);
       color: #fff;
+      cursor: pointer;
+    }
+    .favourites-dialog-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      justify-content: flex-end;
+    }
+    .favourites-dialog-footer button {
+      font: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #favourites-reset-btn {
+      margin-right: auto;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+    }
+    #favourites-close-btn {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+    }
+    .favourites-empty {
+      margin: 0 0 0.85rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      font-style: italic;
     }
     #search {
       flex: 1;
@@ -274,7 +498,6 @@ SITE_HTML = r"""<!DOCTYPE html>
       outline: 2px solid var(--accent);
       outline-offset: 1px;
     }
-    .count { color: var(--muted); font-size: 0.875rem; }
     .card {
       background: var(--card);
       border-radius: 14px;
@@ -504,10 +727,25 @@ SITE_HTML = r"""<!DOCTYPE html>
         align-items: stretch;
       }
       #search { min-width: 0; width: 100%; }
-      #favourites-btn {
+      .favourites-wrap {
         width: 100%;
-        padding: 0.6rem 1rem;
+      }
+      .favourites-control {
+        width: 100%;
+      }
+      #favourites-btn {
+        flex: 1;
+        min-width: 0;
+        padding: 0.6rem 0.85rem;
         font-size: 1rem;
+      }
+      .count {
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+      }
+      #favourites-edit-btn {
+        width: 2.75rem;
       }
       .toolbar-filters-mobile { display: flex; }
       .promo-panel-desktop { display: none !important; }
@@ -551,8 +789,20 @@ SITE_HTML = r"""<!DOCTYPE html>
 
     <div class="toolbar">
       <input id="search" type="search" placeholder="Search in this tab…" autocomplete="off" />
-      <div class="favourites-wrap visible" id="favourites-wrap">
-        <button type="button" id="favourites-btn" aria-pressed="false">Favourites</button>
+      <div class="favourites-wrap" id="favourites-wrap">
+        <div class="favourites-control" id="favourites-control">
+          <button type="button" id="favourites-btn" aria-pressed="false">
+            <span class="favourites-star" aria-hidden="true">★</span>
+            <span>Favourites</span>
+          </button>
+          <span class="favourites-divider" aria-hidden="true"></span>
+          <button type="button" id="favourites-edit-btn" aria-label="Edit favourites list" title="Edit favourites">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+            </svg>
+          </button>
+        </div>
       </div>
       <span class="count" id="count"></span>
     </div>
@@ -651,6 +901,23 @@ SITE_HTML = r"""<!DOCTYPE html>
         <div class="promo-cards ended-cards" id="ended-cards" aria-live="polite"></div>
       </div>
     </details>
+
+    <dialog id="favourites-dialog" class="favourites-dialog">
+      <div class="favourites-dialog-inner">
+        <h2 id="favourites-dialog-title">Favourites</h2>
+        <p class="favourites-help" id="favourites-help">Match products that contain these words.</p>
+        <ul class="favourites-list" id="favourites-list"></ul>
+        <p class="favourites-empty" id="favourites-empty" hidden>Add your first favourite below.</p>
+        <div class="favourites-add">
+          <input id="favourites-input" type="text" placeholder="e.g. peppers" autocomplete="off" />
+          <button type="button" id="favourites-add-btn">Add</button>
+        </div>
+        <div class="favourites-dialog-footer">
+          <button type="button" id="favourites-reset-btn">Reset to defaults</button>
+          <button type="button" id="favourites-close-btn">Confirm</button>
+        </div>
+      </div>
+    </dialog>
   </div>
   <script>
     const CSV_URL = "promotions.csv";
@@ -659,8 +926,21 @@ SITE_HTML = r"""<!DOCTYPE html>
     let categoryTab = "vegetable";
     let storeFilter = "all";
     let statusFilter = "all";
-    let favouritesFilter = false;
-    let favouritesKeywords = ["onions", "carrots", "cucumbers", "tomatoes"];
+    const FAVOURITES_STORAGE_KEY = "promotionsAccumulator.favourites";
+    const BUILTIN_FAVOURITE_DEFAULTS = {
+      vegetable: ["onions", "carrots", "cucumbers", "tomatoes"],
+      fruit: ["bananas", "apples"],
+    };
+    let defaultFavouritesByCategory = {
+      vegetable: [...BUILTIN_FAVOURITE_DEFAULTS.vegetable],
+      fruit: [...BUILTIN_FAVOURITE_DEFAULTS.fruit],
+    };
+    let favouritesByCategory = {
+      vegetable: [...BUILTIN_FAVOURITE_DEFAULTS.vegetable],
+      fruit: [...BUILTIN_FAVOURITE_DEFAULTS.fruit],
+    };
+    let favouritesFilterByCategory = { vegetable: false, fruit: false };
+    let draftFavouritesKeywords = [];
     let sortKey = "active";
     let sortDir = "asc";
 
@@ -676,14 +956,25 @@ SITE_HTML = r"""<!DOCTYPE html>
     const refreshBtn = document.getElementById("refresh-btn");
     const refreshHint = document.getElementById("refresh-hint");
     const favouritesWrap = document.getElementById("favourites-wrap");
+    const favouritesControl = document.getElementById("favourites-control");
     const favouritesBtn = document.getElementById("favourites-btn");
+    const favouritesEditBtn = document.getElementById("favourites-edit-btn");
+    const favouritesDialog = document.getElementById("favourites-dialog");
+    const favouritesListEl = document.getElementById("favourites-list");
+    const favouritesEmptyEl = document.getElementById("favourites-empty");
+    const favouritesInput = document.getElementById("favourites-input");
+    const favouritesAddBtn = document.getElementById("favourites-add-btn");
+    const favouritesResetBtn = document.getElementById("favourites-reset-btn");
+    const favouritesCloseBtn = document.getElementById("favourites-close-btn");
+    const favouritesHelpEl = document.getElementById("favourites-help");
+    const favouritesDialogTitle = document.getElementById("favourites-dialog-title");
     const filterStore = document.getElementById("filter-store");
     const filterStatus = document.getElementById("filter-status");
     const filterStoreMobile = document.getElementById("filter-store-mobile");
     const filterStatusMobile = document.getElementById("filter-status-mobile");
 
     const VEG_FIRST = /\b(tomato|potato|onion|shallot|pepper|cucumber|broccoli|mushroom|radish|salad|courgette|carrot|cabbage|lettuce|spinach|leek|garlic|cauliflower|aubergine|asparagus|beans?\b|peas?\b)\b/i;
-    const FRUIT = /\b(mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|grapefruit|lemon|lime|grape|melon|pineapple|peach|strawber|blueber|raspber|banana|kiwi|fig\b|apricot|nectarine|avocado|coconut|pomegranate|rhubarb)\b/i;
+    const FRUIT = /\b(mango|oranges?|pears?|apples?|easypeelers|satsuma|clementine|mandarin|grapefruit|lemon|lime|grape|melon|pineapple|peaches?|strawber|blueber|raspber|bananas?|kiwi|fig\b|apricots?|nectarines?|avocado|coconut|pomegranate|rhubarb)\b/i;
     function classifyProduct(name) {
       const text = name.toLowerCase();
       if (text.includes("salad trio")) return "vegetable";
@@ -827,9 +1118,28 @@ SITE_HTML = r"""<!DOCTYPE html>
       return { generated, rows };
     }
 
+    function favouritesForCategory(category) {
+      return favouritesByCategory[category] || [];
+    }
+
+    function defaultsForCategory(category) {
+      return defaultFavouritesByCategory[category] || [];
+    }
+
+    function isFavouritesFilterActive() {
+      return favouritesFilterByCategory[categoryTab] === true;
+    }
+
+    function cloneFavouritesDefaults() {
+      return {
+        vegetable: [...defaultsForCategory("vegetable")],
+        fruit: [...defaultsForCategory("fruit")],
+      };
+    }
+
     function matchesFavourites(product) {
       const name = product.toLowerCase();
-      return favouritesKeywords.some((kw) => {
+      return favouritesForCategory(categoryTab).some((kw) => {
         const k = kw.toLowerCase().trim();
         if (!k) return false;
         if (name.includes(k)) return true;
@@ -839,11 +1149,120 @@ SITE_HTML = r"""<!DOCTYPE html>
     }
 
     function updateFavouritesToolbar() {
-      const onVeg = categoryTab === "vegetable";
-      favouritesWrap.classList.toggle("visible", onVeg);
-      if (!onVeg) {
-        favouritesFilter = false;
-        favouritesBtn.setAttribute("aria-pressed", "false");
+      favouritesControl.classList.toggle("is-fruit", categoryTab === "fruit");
+      const active = isFavouritesFilterActive();
+      favouritesBtn.setAttribute("aria-pressed", active ? "true" : "false");
+      favouritesControl.classList.toggle("is-active", active);
+    }
+
+    function setFavouritesActive(active) {
+      favouritesFilterByCategory[categoryTab] = active;
+      favouritesBtn.setAttribute("aria-pressed", active ? "true" : "false");
+      favouritesControl.classList.toggle("is-active", active);
+    }
+
+    function updateFavouritesDialogCopy() {
+      const label = categoryTab === "fruit" ? "Fruit" : "Vegetable";
+      favouritesDialogTitle.textContent = `${label} favourites`;
+      favouritesHelpEl.textContent = "Match products that contain these words.";
+      favouritesInput.placeholder = categoryTab === "fruit" ? "e.g. strawberries" : "e.g. peppers";
+    }
+
+    function normaliseKeyword(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function normaliseKeywordList(values) {
+      return values.map(normaliseKeyword).filter(Boolean);
+    }
+
+    function loadFavouritesFromStorage() {
+      favouritesByCategory = cloneFavouritesDefaults();
+      try {
+        const raw = localStorage.getItem(FAVOURITES_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          favouritesByCategory.vegetable = normaliseKeywordList(parsed);
+          return;
+        }
+        if (parsed && typeof parsed === "object") {
+          for (const category of ["vegetable", "fruit"]) {
+            if (Array.isArray(parsed[category])) {
+              favouritesByCategory[category] = normaliseKeywordList(parsed[category]);
+            }
+          }
+        }
+      } catch (_) {
+        favouritesByCategory = cloneFavouritesDefaults();
+      }
+    }
+
+    function saveFavouritesToStorage() {
+      try {
+        localStorage.setItem(
+          FAVOURITES_STORAGE_KEY,
+          JSON.stringify(favouritesByCategory),
+        );
+      } catch (_) { /* private mode / quota */ }
+    }
+
+    function renderFavouritesEditor() {
+      favouritesListEl.innerHTML = draftFavouritesKeywords
+        .map(
+          (kw, idx) => `
+            <li>
+              <span>${esc(kw)}</span>
+              <button type="button" class="remove-kw" data-idx="${idx}" aria-label="Remove ${esc(kw)}">×</button>
+            </li>`,
+        )
+        .join("");
+      favouritesEmptyEl.hidden = draftFavouritesKeywords.length > 0;
+    }
+
+    function addFavouriteKeyword(raw) {
+      const kw = normaliseKeyword(raw);
+      if (!kw) return false;
+      if (draftFavouritesKeywords.includes(kw)) return false;
+      draftFavouritesKeywords = [...draftFavouritesKeywords, kw];
+      renderFavouritesEditor();
+      return true;
+    }
+
+    function removeFavouriteKeyword(index) {
+      draftFavouritesKeywords = draftFavouritesKeywords.filter((_, i) => i !== index);
+      renderFavouritesEditor();
+    }
+
+    function resetFavouritesDraft() {
+      draftFavouritesKeywords = [...defaultsForCategory(categoryTab)];
+      renderFavouritesEditor();
+    }
+
+    function applyFavouritesDraft() {
+      favouritesByCategory[categoryTab] = [...draftFavouritesKeywords];
+      saveFavouritesToStorage();
+      render();
+    }
+
+    function openFavouritesEditor() {
+      draftFavouritesKeywords = [...favouritesForCategory(categoryTab)];
+      updateFavouritesDialogCopy();
+      renderFavouritesEditor();
+      favouritesInput.value = "";
+      if (typeof favouritesDialog.showModal === "function") {
+        favouritesDialog.showModal();
+      } else {
+        favouritesDialog.setAttribute("open", "");
+      }
+      favouritesInput.focus();
+    }
+
+    function closeFavouritesEditor() {
+      if (typeof favouritesDialog.close === "function") {
+        favouritesDialog.close();
+      } else {
+        favouritesDialog.removeAttribute("open");
       }
     }
 
@@ -852,10 +1271,18 @@ SITE_HTML = r"""<!DOCTYPE html>
         const res = await fetch("site-config.json", { cache: "no-store" });
         if (!res.ok) return;
         const cfg = await res.json();
-        if (Array.isArray(cfg.frequentBuyKeywords) && cfg.frequentBuyKeywords.length) {
-          favouritesKeywords = cfg.frequentBuyKeywords;
+        if (cfg.favouriteKeywords && typeof cfg.favouriteKeywords === "object") {
+          for (const category of ["vegetable", "fruit"]) {
+            const values = cfg.favouriteKeywords[category];
+            if (Array.isArray(values) && values.length) {
+              defaultFavouritesByCategory[category] = normaliseKeywordList(values);
+            }
+          }
+        } else if (Array.isArray(cfg.frequentBuyKeywords) && cfg.frequentBuyKeywords.length) {
+          defaultFavouritesByCategory.vegetable = normaliseKeywordList(cfg.frequentBuyKeywords);
         }
       } catch (_) { /* use defaults */ }
+      loadFavouritesFromStorage();
     }
 
     function updateFilterSelectStyles() {
@@ -892,7 +1319,7 @@ SITE_HTML = r"""<!DOCTYPE html>
     function matchesSharedFilters(row, q) {
       if (row.category !== categoryTab) return false;
       if (storeFilter !== "all" && row.supermarket !== storeFilter) return false;
-      if (favouritesFilter && !matchesFavourites(row.product)) return false;
+      if (isFavouritesFilterActive() && !matchesFavourites(row.product)) return false;
       if (q) {
         const hay = `${row.supermarket} ${row.product} ${row.quantity}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -1045,9 +1472,45 @@ SITE_HTML = r"""<!DOCTYPE html>
     });
 
     favouritesBtn.addEventListener("click", () => {
-      favouritesFilter = !favouritesFilter;
-      favouritesBtn.setAttribute("aria-pressed", favouritesFilter ? "true" : "false");
+      setFavouritesActive(!isFavouritesFilterActive());
       render();
+    });
+
+    favouritesEditBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openFavouritesEditor();
+    });
+    favouritesEditBtn.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+    });
+    favouritesCloseBtn.addEventListener("click", () => {
+      applyFavouritesDraft();
+      closeFavouritesEditor();
+    });
+    favouritesResetBtn.addEventListener("click", resetFavouritesDraft);
+    favouritesAddBtn.addEventListener("click", () => {
+      if (addFavouriteKeyword(favouritesInput.value)) {
+        favouritesInput.value = "";
+      }
+      favouritesInput.focus();
+    });
+    favouritesInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (addFavouriteKeyword(favouritesInput.value)) {
+          favouritesInput.value = "";
+        }
+      }
+    });
+    favouritesListEl.addEventListener("click", (e) => {
+      const btn = e.target.closest(".remove-kw");
+      if (!btn) return;
+      const idx = Number(btn.dataset.idx);
+      if (!Number.isNaN(idx)) removeFavouriteKeyword(idx);
+    });
+    favouritesDialog.addEventListener("click", (e) => {
+      if (e.target === favouritesDialog) closeFavouritesEditor();
     });
 
     filterStore.addEventListener("change", () => setStoreFilter(filterStore.value));

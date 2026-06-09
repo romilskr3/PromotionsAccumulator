@@ -10,13 +10,13 @@ Fetches fruit and vegetable promotions from Dublin supermarkets (Lidl, Aldi, Tes
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
-playwright install chromium
+playwright install chrome
 ```
 
-Tesco Clubcard prices need a saved browser session (Akamai blocks headless bots):
+Tesco Fresh 4 is public (no sign-in). If Akamai blocks automated fetches, optionally save a browser session:
 
 ```bash
-python3 scripts/save_tesco_session.py   # once, or when Tesco stops working
+python3 scripts/save_tesco_session.py   # only when Tesco stops working locally
 ```
 
 ## Update the live website
@@ -84,7 +84,7 @@ Each push that updates `docs/` refreshes the site. No GitHub Actions workflow is
 |-------|--------|
 | Lidl | Super Savers fruit & veg (weekly) |
 | Aldi | Super 6 from leaflet spreads |
-| Tesco | Fresh 4 (Clubcard prices; needs saved session) |
+| Tesco | Fresh 4 (Clubcard prices; Playwright + Chrome) |
 | SuperValu | [`supervalu.ie/offers`](https://supervalu.ie/offers) + `/offers/leaflet/{id}` PDF; falls back to local cache if this week is offline ([details](leaflets/README.md#supervalu-sources)) |
 | Dunnes | Not implemented |
 
@@ -92,6 +92,6 @@ Cached leaflets live under [`leaflets/`](leaflets/).
 
 ## Customisation
 
-**Favourites** keywords (vegetables tab): edit `FREQUENT_BUY_KEYWORDS` in [`fetchers/_shared/frequent_buy.py`](fetchers/_shared/frequent_buy.py), then run `./scripts/refresh_and_push.sh`.
+**Favourites** keywords (vegetables and fruits tabs): edit `DEFAULT_FAVOURITE_KEYWORDS` in [`fetchers/_shared/frequent_buy.py`](fetchers/_shared/frequent_buy.py), then run `./scripts/refresh_and_push.sh`.
 
 Site UI and table logic: [`fetchers/_shared/html.py`](fetchers/_shared/html.py).

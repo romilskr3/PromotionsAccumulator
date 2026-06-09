@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from fetchers._shared.frequent_buy import FREQUENT_BUY_KEYWORDS
+from fetchers._shared.frequent_buy import DEFAULT_FAVOURITE_KEYWORDS, FREQUENT_BUY_KEYWORDS
 _DEFAULT_OWNER = "romilskr3"
 _DEFAULT_REPO = "PromotionsAccumulator"
 
@@ -39,6 +39,10 @@ def site_config_dict() -> dict[str, Any]:
             "refresh-promotions.yml"
         ),
         "frequentBuyKeywords": list(FREQUENT_BUY_KEYWORDS),
+        "favouriteKeywords": {
+            category: list(keywords)
+            for category, keywords in DEFAULT_FAVOURITE_KEYWORDS.items()
+        },
     }
 
 

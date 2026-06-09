@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
@@ -18,6 +18,23 @@ class Promotion:
     source: str = "leaflet"
     url: str | None = None
     quantity: str | None = None
+
+    def with_normalized_dates(self) -> Promotion:
+        """Fix inverted same-month ranges (e.g. 28/05–03/05 → 28 May–3 Jun)."""
+        promo_from = self.promotion_from
+        promo_until = self.promotion_until
+        if (
+            promo_until.month == promo_from.month
+            and promo_until.day < promo_from.day
+        ):
+            next_month = promo_from.month + 1
+            year = promo_from.year
+            if next_month > 12:
+                promo_until = date(year + 1, 1, promo_until.day)
+            else:
+                promo_until = date(year, next_month, promo_until.day)
+            return replace(self, promotion_until=promo_until)
+        return self
 
     def active_today(self, today: date | None = None) -> bool:
         return self.promotion_status(today) == "live"

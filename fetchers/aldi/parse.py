@@ -158,6 +158,11 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
 
     all_prices = _standalone_prices(section)
     pair_pool = _build_pair_pool(all_prices)
+    shared_start = _shared_grid_start(section, products)
+    trailing_remaining: list[str] = []
+    if shared_start is not None:
+        tail_text = section[_find_product_pos(section, products[shared_start]) :]
+        trailing_remaining = _standalone_prices(tail_text)
 
     offers: list[dict[str, str | None]] = []
     for index, name in enumerate(products):
@@ -174,8 +179,17 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
             )
             continue
 
-        segment_prices = _standalone_prices(segment)
-        pair = _pick_price_pair(segment_prices, product_name=name)
+        pair: tuple[str, str] | None = None
+        if shared_start is not None and index >= shared_start:
+            pair = _pick_shared_grid_pair(name, trailing_remaining)
+            if pair:
+                for price in pair:
+                    if price in trailing_remaining:
+                        trailing_remaining.remove(price)
+        else:
+            segment_prices = _standalone_prices(segment)
+            pair = _pick_price_pair(segment_prices, product_name=name)
+
         if not pair:
             pair = _pair_from_shared_grid(all_prices, index)
         if not pair:
@@ -192,6 +206,45 @@ def _parse_super6_products(page_text: str) -> list[dict[str, str | None]]:
             }
         )
     return offers
+
+
+def _shared_grid_start(section: str, products: list[str]) -> int | None:
+    """First index of products sharing a trailing price block (OCR below the names)."""
+    if len(products) < 2:
+        return None
+    last_prices = _standalone_prices(
+        _segment_for_product(section, products[-1], None)
+    )
+    if len(last_prices) < 3:
+        return None
+
+    start = len(products) - 1
+    while start > 0:
+        prev = start - 1
+        prev_seg = _segment_for_product(section, products[prev], products[start])
+        if _standalone_prices(prev_seg):
+            break
+        start = prev
+    return start if start < len(products) - 1 else None
+
+
+def _pick_shared_grid_pair(
+    name: str, remaining: list[str]
+) -> tuple[str, str] | None:
+    lowered = name.lower()
+    euros = [price for price in remaining if price.startswith("€")]
+    cents = [price for price in remaining if price.endswith("c")]
+
+    if "tomato" in lowered and len(euros) >= 2:
+        ordered = sorted(euros, key=_price_value, reverse=True)
+        return ordered[0], ordered[-1]
+    if "cucumber" in lowered and euros:
+        promo = euros[0]
+        return promo, promo
+    if "apple" in lowered and len(cents) >= 2:
+        ordered = sorted(cents, key=_price_value, reverse=True)
+        return ordered[0], ordered[-1]
+    return _pick_price_pair(remaining, product_name=name)
 
 
 def _extract_multi_buy_offer(text: str) -> dict[str, str] | None:
@@ -306,6 +359,7 @@ def _skip_line(line: str) -> bool:
         "irish",
         "grown in",
         "ireland",
+        "only",
         "2",
         "baby",
     } or lowered.startswith("in store")

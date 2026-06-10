@@ -34,9 +34,9 @@ This will:
 3. Commit and push to `main`
 4. Trigger a GitHub Pages redeploy (usually within a minute)
 
-Then open the live site and click **Reload data** (top right) to load the new `promotions.csv`.
+Then open the live site and click **Refresh data** (top right) to fetch new leaflets via GitHub Actions and load the updated CSV.
 
-**Optional (GitHub):** **Actions** → **Refresh promotions data** → **Run workflow** — same steps in the cloud if your account’s Actions billing is OK. Until then, use the script above.
+**GitHub Actions:** **Actions** → **Refresh promotions data** → **Run workflow** — same steps in the cloud. The site **Refresh data** button can trigger this too (paste a fine-grained token once; stored in your browser only).
 
 **Manual equivalent:**
 

@@ -767,13 +767,14 @@ SITE_HTML = r"""<!DOCTYPE html>
         <h1>Who should we buy from?</h1>
         <p class="meta" id="meta">Loading promotions…</p>
       </div>
-      <button type="button" id="refresh-btn" title="Reload promotions.csv from GitHub">Reload data</button>
+      <button type="button" id="refresh-btn" title="Fetch latest leaflets via GitHub Actions, then reload">Refresh data</button>
     </div>
     <p class="refresh-hint" id="refresh-hint" hidden></p>
     <details class="local-refresh-help">
-      <summary>Update data (run on your Mac)</summary>
+      <summary>Refresh options</summary>
+      <p><strong>From this page:</strong> click <strong>Refresh data</strong>. The first time, paste a <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">fine-grained GitHub token</a> with <em>Actions: Read and write</em> on this repo (stored in this browser only).</p>
+      <p><strong>From your Mac:</strong></p>
       <pre>./scripts/refresh_and_push.sh</pre>
-      <p>Then click <strong>Reload data</strong>.</p>
     </details>
 
     <div class="category-tabs" role="tablist" aria-label="Produce category">
@@ -943,6 +944,12 @@ SITE_HTML = r"""<!DOCTYPE html>
     let draftFavouritesKeywords = [];
     let sortKey = "active";
     let sortDir = "asc";
+    const REFRESH_TOKEN_KEY = "promotionsAccumulator.refreshToken";
+    let siteConfig = {
+      owner: "romilskr3",
+      repo: "PromotionsAccumulator",
+      workflowFile: "refresh-promotions.yml",
+    };
 
     const tbody = document.getElementById("tbody");
     const promoCards = document.getElementById("promo-cards");
@@ -1271,6 +1278,9 @@ SITE_HTML = r"""<!DOCTYPE html>
         const res = await fetch("site-config.json", { cache: "no-store" });
         if (!res.ok) return;
         const cfg = await res.json();
+        if (cfg.owner) siteConfig.owner = cfg.owner;
+        if (cfg.repo) siteConfig.repo = cfg.repo;
+        if (cfg.workflowFile) siteConfig.workflowFile = cfg.workflowFile;
         if (cfg.favouriteKeywords && typeof cfg.favouriteKeywords === "object") {
           for (const category of ["vegetable", "fruit"]) {
             const values = cfg.favouriteKeywords[category];
@@ -1531,6 +1541,83 @@ SITE_HTML = r"""<!DOCTYPE html>
       });
     });
 
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function getRefreshToken() {
+      return localStorage.getItem(REFRESH_TOKEN_KEY) || "";
+    }
+
+    function saveRefreshToken(token) {
+      const trimmed = String(token || "").trim();
+      if (trimmed) localStorage.setItem(REFRESH_TOKEN_KEY, trimmed);
+      else localStorage.removeItem(REFRESH_TOKEN_KEY);
+    }
+
+    function githubApiHeaders(includeAuth) {
+      const headers = {
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      };
+      if (includeAuth) {
+        const token = getRefreshToken();
+        if (token) headers.Authorization = `Bearer ${token}`;
+      }
+      return headers;
+    }
+
+    async function ensureRefreshToken() {
+      if (getRefreshToken()) return true;
+      const entered = window.prompt(
+        "Paste a fine-grained GitHub token with Actions read/write on this repo (saved in this browser only), or Cancel to reload CSV without fetching new leaflets:"
+      );
+      if (!entered) return false;
+      saveRefreshToken(entered);
+      return true;
+    }
+
+    async function dispatchRefreshWorkflow() {
+      const res = await fetch(
+        `https://api.github.com/repos/${siteConfig.owner}/${siteConfig.repo}/actions/workflows/${siteConfig.workflowFile}/dispatches`,
+        {
+          method: "POST",
+          headers: githubApiHeaders(true),
+          body: JSON.stringify({ ref: "main" }),
+        }
+      );
+      if (res.status === 204) return;
+      const detail = await res.text();
+      throw new Error(`GitHub ${res.status}${detail ? `: ${detail.slice(0, 180)}` : ""}`);
+    }
+
+    async function waitForWorkflowRun(afterMs) {
+      const url = `https://api.github.com/repos/${siteConfig.owner}/${siteConfig.repo}/actions/workflows/${siteConfig.workflowFile}/runs?per_page=5`;
+      const timeoutMs = 20 * 60 * 1000;
+      const started = Date.now();
+
+      while (Date.now() - started < timeoutMs) {
+        const res = await fetch(url, {
+          headers: githubApiHeaders(Boolean(getRefreshToken())),
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error(`GitHub ${res.status} while checking workflow`);
+        const data = await res.json();
+        const runs = data.workflow_runs || [];
+        const run = runs.find((item) => new Date(item.created_at).getTime() >= afterMs - 10_000);
+        if (!run) {
+          await sleep(5000);
+          continue;
+        }
+        if (run.status === "completed") {
+          if (run.conclusion === "success") return run;
+          throw new Error(`Workflow finished: ${run.conclusion || "failed"}`);
+        }
+        await sleep(5000);
+      }
+      throw new Error("Timed out waiting for GitHub Actions (20 min)");
+    }
+
     async function fetchCsvText() {
       const res = await fetch(`${CSV_URL}?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1558,20 +1645,43 @@ SITE_HTML = r"""<!DOCTYPE html>
       }
     }
 
-    async function reloadData() {
+    async function refreshPromotions() {
       const prev = lastGenerated;
       refreshBtn.disabled = true;
-      refreshBtn.textContent = "Reloading…";
       refreshHint.hidden = false;
-      await load();
-      refreshBtn.disabled = false;
-      refreshBtn.textContent = "Reload data";
-      refreshHint.textContent = lastGenerated && lastGenerated !== prev
-        ? "Loaded newer data from GitHub."
-        : "Same data as before. Run update locally and push to publish new leaflets.";
+
+      try {
+        if (await ensureRefreshToken()) {
+          refreshBtn.textContent = "Starting…";
+          refreshHint.textContent = "Triggering GitHub Actions refresh…";
+          const startedAt = Date.now();
+          await dispatchRefreshWorkflow();
+          refreshBtn.textContent = "Fetching…";
+          refreshHint.textContent = "Workflow running — fetching leaflets (usually a few minutes)…";
+          await waitForWorkflowRun(startedAt);
+          refreshHint.textContent = "Workflow finished — loading new data…";
+          await sleep(3000);
+        } else {
+          refreshHint.textContent = "Reloading CSV from GitHub…";
+        }
+
+        refreshBtn.textContent = "Loading…";
+        await load();
+        refreshHint.textContent = lastGenerated && lastGenerated !== prev
+          ? "Promotions updated."
+          : getRefreshToken()
+            ? "Refresh complete (CSV timestamp unchanged)."
+            : "Reloaded CSV. Add a GitHub token under Refresh options to fetch new leaflets from here.";
+      } catch (err) {
+        refreshHint.textContent = `Refresh failed: ${err.message}`;
+        metaEl.classList.add("error");
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "Refresh data";
+      }
     }
 
-    refreshBtn.addEventListener("click", reloadData);
+    refreshBtn.addEventListener("click", refreshPromotions);
     (async () => {
       await loadSiteConfig();
       await load();

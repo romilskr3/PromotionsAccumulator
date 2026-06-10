@@ -38,6 +38,7 @@ def site_config_dict() -> dict[str, Any]:
             f"https://github.com/{owner}/{repo}/actions/workflows/"
             "refresh-promotions.yml"
         ),
+        "workflowFile": "refresh-promotions.yml",
         "frequentBuyKeywords": list(FREQUENT_BUY_KEYWORDS),
         "favouriteKeywords": {
             category: list(keywords)

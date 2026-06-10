@@ -1,12 +1,14 @@
-# Manual: Actions → Refresh promotions data → Run workflow.
-# Site Refresh button → Cloudflare Worker (REFRESH_API_URL) → this workflow
+# Manual: Actions → Refresh promotions data → Run workflow
+# Scheduled: Mon & Thu 07:00 Europe/Dublin
+# Local: ./scripts/refresh_and_push.sh
 
 name: Refresh promotions data
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [refresh-promotions]
+  schedule:
+    - cron: "0 7 * * 1,4"
+      timezone: Europe/Dublin
 
 permissions:
   contents: write
@@ -44,8 +46,6 @@ jobs:
             supervalu-leaflet-${{ runner.os }}-
 
       - name: Fetch promotions and update outputs
-        env:
-          REFRESH_API_URL: ${{ vars.REFRESH_API_URL }}
         run: python3 scripts/update_promotions.py --refresh-leaflets
 
       - name: Verify Tesco Fresh 4 refreshed

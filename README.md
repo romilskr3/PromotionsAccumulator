@@ -34,19 +34,15 @@ This will:
 3. Commit and push to `main`
 4. Trigger a GitHub Pages redeploy (usually within a minute)
 
-Then open the live site and click **Refresh data** (top right) to fetch new leaflets via GitHub Actions and load the updated CSV.
+Then open the live site and click **Reload data** (top right) to load the updated CSV.
 
-### Enable Refresh data for everyone (one-time)
+### GitHub Actions (cloud refresh)
 
-GitHub blocks putting a PAT in the repo. Use a free **Cloudflare Worker** as a proxy — the token stays in Cloudflare, the site only stores the worker URL.
+**Actions** → [**Refresh promotions data**](https://github.com/romilskr3/PromotionsAccumulator/actions/workflows/refresh-promotions.yml) → **Run workflow**
 
-1. Deploy the worker — see [`workers/refresh-trigger/README.md`](workers/refresh-trigger/README.md)
-2. Repo **Settings → Secrets and variables → Actions → Variables** → add `REFRESH_API_URL` = your worker URL (e.g. `https://promotions-accumulator-refresh….workers.dev`)
-3. Run **Actions → Refresh promotions data** once
+This fetches the latest leaflets, updates `docs/`, and pushes to `main`. It also runs automatically **every Monday and Thursday at 7:00** (Europe/Dublin).
 
-Anyone can then click **Refresh data** on the live site. You can delete the `REFRESH_DISPATCH_TOKEN` repo secret (no longer used).
-
-**Alternative:** run **Actions → Refresh promotions data** manually, or `./scripts/refresh_and_push.sh` from your Mac.
+**From your Mac:** `./scripts/refresh_and_push.sh` does the same thing locally.
 
 **Manual equivalent:**
 

@@ -1,9 +1,0 @@
-name = "promotions-accumulator-refresh"
-main = "src/index.js"
-compatibility_date = "2024-01-01"
-
-[vars]
-GITHUB_OWNER = "romilskr3"
-GITHUB_REPO = "PromotionsAccumulator"
-WORKFLOW_FILE = "refresh-promotions.yml"
-ALLOWED_ORIGIN = "https://romilskr3.github.io"

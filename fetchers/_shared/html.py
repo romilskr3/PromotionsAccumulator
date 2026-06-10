@@ -767,13 +767,14 @@ SITE_HTML = r"""<!DOCTYPE html>
         <h1>Who should we buy from?</h1>
         <p class="meta" id="meta">Loading promotions…</p>
       </div>
-      <button type="button" id="refresh-btn" title="Fetch latest leaflets via GitHub Actions, then reload">Refresh data</button>
+      <button type="button" id="refresh-btn" title="Reload promotions.csv from GitHub">Reload data</button>
     </div>
     <p class="refresh-hint" id="refresh-hint" hidden></p>
     <details class="local-refresh-help">
-      <summary>Refresh options</summary>
-      <p>Click <strong>Refresh data</strong> to fetch the latest leaflets via GitHub Actions, then reload the table.</p>
+      <summary>Update promotions data</summary>
+      <p><strong>GitHub Actions:</strong> <a id="workflow-link" href="#" target="_blank" rel="noopener">Refresh promotions data</a> → Run workflow (also runs Mon &amp; Thu 7:00).</p>
       <p><strong>From your Mac:</strong> <code>./scripts/refresh_and_push.sh</code></p>
+      <p>Then click <strong>Reload data</strong> on this page.</p>
     </details>
 
     <div class="category-tabs" role="tablist" aria-label="Produce category">
@@ -946,8 +947,7 @@ SITE_HTML = r"""<!DOCTYPE html>
     let siteConfig = {
       owner: "romilskr3",
       repo: "PromotionsAccumulator",
-      workflowFile: "refresh-promotions.yml",
-      refreshApiUrl: "",
+      workflowUrl: "https://github.com/romilskr3/PromotionsAccumulator/actions/workflows/refresh-promotions.yml",
     };
 
     const tbody = document.getElementById("tbody");
@@ -961,6 +961,7 @@ SITE_HTML = r"""<!DOCTYPE html>
     const searchEl = document.getElementById("search");
     const refreshBtn = document.getElementById("refresh-btn");
     const refreshHint = document.getElementById("refresh-hint");
+    const workflowLink = document.getElementById("workflow-link");
     const favouritesWrap = document.getElementById("favourites-wrap");
     const favouritesControl = document.getElementById("favourites-control");
     const favouritesBtn = document.getElementById("favourites-btn");
@@ -1279,8 +1280,7 @@ SITE_HTML = r"""<!DOCTYPE html>
         const cfg = await res.json();
         if (cfg.owner) siteConfig.owner = cfg.owner;
         if (cfg.repo) siteConfig.repo = cfg.repo;
-        if (cfg.workflowFile) siteConfig.workflowFile = cfg.workflowFile;
-        if (cfg.refreshApiUrl) siteConfig.refreshApiUrl = cfg.refreshApiUrl.replace(/\/$/, "");
+        if (cfg.workflowUrl) siteConfig.workflowUrl = cfg.workflowUrl;
         if (cfg.favouriteKeywords && typeof cfg.favouriteKeywords === "object") {
           for (const category of ["vegetable", "fruit"]) {
             const values = cfg.favouriteKeywords[category];
@@ -1293,6 +1293,9 @@ SITE_HTML = r"""<!DOCTYPE html>
         }
       } catch (_) { /* use defaults */ }
       loadFavouritesFromStorage();
+      if (workflowLink && siteConfig.workflowUrl) {
+        workflowLink.href = siteConfig.workflowUrl;
+      }
     }
 
     function updateFilterSelectStyles() {
@@ -1541,59 +1544,6 @@ SITE_HTML = r"""<!DOCTYPE html>
       });
     });
 
-    function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    function canDispatchRefresh() {
-      return Boolean(siteConfig.refreshApiUrl);
-    }
-
-    function githubApiHeaders() {
-      return {
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-      };
-    }
-
-    async function dispatchRefreshWorkflow() {
-      const res = await fetch(siteConfig.refreshApiUrl, {
-        method: "POST",
-        mode: "cors",
-      });
-      if (!res.ok) {
-        const detail = await res.text();
-        throw new Error(`Refresh trigger ${res.status}${detail ? `: ${detail.slice(0, 180)}` : ""}`);
-      }
-    }
-
-    async function waitForWorkflowRun(afterMs) {
-      const url = `https://api.github.com/repos/${siteConfig.owner}/${siteConfig.repo}/actions/workflows/${siteConfig.workflowFile}/runs?per_page=5`;
-      const timeoutMs = 20 * 60 * 1000;
-      const started = Date.now();
-
-      while (Date.now() - started < timeoutMs) {
-        const res = await fetch(url, {
-          headers: githubApiHeaders(),
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error(`GitHub ${res.status} while checking workflow`);
-        const data = await res.json();
-        const runs = data.workflow_runs || [];
-        const run = runs.find((item) => new Date(item.created_at).getTime() >= afterMs - 10_000);
-        if (!run) {
-          await sleep(5000);
-          continue;
-        }
-        if (run.status === "completed") {
-          if (run.conclusion === "success") return run;
-          throw new Error(`Workflow finished: ${run.conclusion || "failed"}`);
-        }
-        await sleep(5000);
-      }
-      throw new Error("Timed out waiting for GitHub Actions (20 min)");
-    }
-
     async function fetchCsvText() {
       const res = await fetch(`${CSV_URL}?t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1621,43 +1571,21 @@ SITE_HTML = r"""<!DOCTYPE html>
       }
     }
 
-    async function refreshPromotions() {
+    async function reloadData() {
       const prev = lastGenerated;
       refreshBtn.disabled = true;
+      refreshBtn.textContent = "Reloading…";
       refreshHint.hidden = false;
-
-      try {
-        if (canDispatchRefresh()) {
-          refreshBtn.textContent = "Starting…";
-          refreshHint.textContent = "Triggering GitHub Actions refresh…";
-          const startedAt = Date.now();
-          await dispatchRefreshWorkflow();
-          refreshBtn.textContent = "Fetching…";
-          refreshHint.textContent = "Workflow running — fetching leaflets (usually a few minutes)…";
-          await waitForWorkflowRun(startedAt);
-          refreshHint.textContent = "Workflow finished — loading new data…";
-          await sleep(3000);
-        } else {
-          refreshHint.textContent = "Reloading CSV from GitHub…";
-        }
-
-        refreshBtn.textContent = "Loading…";
-        await load();
-        refreshHint.textContent = lastGenerated && lastGenerated !== prev
-          ? "Promotions updated."
-          : canDispatchRefresh()
-            ? "Refresh complete (CSV timestamp unchanged)."
-            : "Reloaded CSV (set REFRESH_API_URL after deploying the refresh worker).";
-      } catch (err) {
-        refreshHint.textContent = `Refresh failed: ${err.message}`;
-        metaEl.classList.add("error");
-      } finally {
-        refreshBtn.disabled = false;
-        refreshBtn.textContent = "Refresh data";
-      }
+      refreshHint.textContent = "Loading promotions.csv…";
+      await load();
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = "Reload data";
+      refreshHint.textContent = lastGenerated && lastGenerated !== prev
+        ? "Loaded newer data from GitHub."
+        : "Same data as before — run GitHub Actions or ./scripts/refresh_and_push.sh to fetch new leaflets.";
     }
 
-    refreshBtn.addEventListener("click", refreshPromotions);
+    refreshBtn.addEventListener("click", reloadData);
     (async () => {
       await loadSiteConfig();
       await load();

@@ -3,7 +3,6 @@
   "repo": "PromotionsAccumulator",
   "slug": "romilskr3/PromotionsAccumulator",
   "workflowUrl": "https://github.com/romilskr3/PromotionsAccumulator/actions/workflows/refresh-promotions.yml",
-  "workflowFile": "refresh-promotions.yml",
   "frequentBuyKeywords": [
     "onions",
     "carrots",

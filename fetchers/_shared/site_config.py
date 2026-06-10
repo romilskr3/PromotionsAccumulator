@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -39,7 +38,6 @@ def site_config_dict() -> dict[str, Any]:
             f"https://github.com/{owner}/{repo}/actions/workflows/"
             "refresh-promotions.yml"
         ),
-        "workflowFile": "refresh-promotions.yml",
         "frequentBuyKeywords": list(FREQUENT_BUY_KEYWORDS),
         "favouriteKeywords": {
             category: list(keywords)
@@ -50,19 +48,8 @@ def site_config_dict() -> dict[str, Any]:
 
 def write_site_config(path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    cfg = site_config_dict()
-
-    existing_api_url = ""
-    if path.is_file():
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8"))
-            existing_api_url = str(existing.get("refreshApiUrl") or "").strip()
-        except (json.JSONDecodeError, OSError):
-            existing_api_url = ""
-
-    api_url = os.environ.get("REFRESH_API_URL", "").strip() or existing_api_url
-    if api_url:
-        cfg["refreshApiUrl"] = api_url.rstrip("/")
-
-    path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(site_config_dict(), indent=2) + "\n",
+        encoding="utf-8",
+    )
     return path

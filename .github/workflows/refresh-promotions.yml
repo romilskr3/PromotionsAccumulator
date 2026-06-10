@@ -1,5 +1,5 @@
 # Manual: Actions → Refresh promotions data → Run workflow.
-# Site: Refresh data button (GitHub PAT in browser) or ./scripts/refresh_and_push.sh
+# Site: Refresh data button (token in site-config from REFRESH_DISPATCH_TOKEN secret)
 
 name: Refresh promotions data
 
@@ -44,6 +44,8 @@ jobs:
             supervalu-leaflet-${{ runner.os }}-
 
       - name: Fetch promotions and update outputs
+        env:
+          REFRESH_DISPATCH_TOKEN: ${{ secrets.REFRESH_DISPATCH_TOKEN }}
         run: python3 scripts/update_promotions.py --refresh-leaflets
 
       - name: Verify Tesco Fresh 4 refreshed

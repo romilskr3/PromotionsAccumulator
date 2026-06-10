@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -49,8 +50,22 @@ def site_config_dict() -> dict[str, Any]:
 
 def write_site_config(path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(site_config_dict(), indent=2) + "\n",
-        encoding="utf-8",
-    )
+    cfg = site_config_dict()
+
+    existing_token = ""
+    if path.is_file():
+        try:
+            existing_token = json.loads(path.read_text(encoding="utf-8")).get(
+                "refreshDispatchToken", ""
+            )
+        except (json.JSONDecodeError, OSError):
+            existing_token = ""
+
+    token = os.environ.get("REFRESH_DISPATCH_TOKEN", "").strip() or str(
+        existing_token or ""
+    ).strip()
+    if token:
+        cfg["refreshDispatchToken"] = token
+
+    path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
     return path

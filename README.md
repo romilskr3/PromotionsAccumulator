@@ -36,7 +36,18 @@ This will:
 
 Then open the live site and click **Refresh data** (top right) to fetch new leaflets via GitHub Actions and load the updated CSV.
 
-**GitHub Actions:** **Actions** → **Refresh promotions data** → **Run workflow** — same steps in the cloud. The site **Refresh data** button can trigger this too (paste a fine-grained token once; stored in your browser only).
+### One-time: enable Refresh data for everyone
+
+GitHub requires authentication to start a workflow. To let **any visitor** click Refresh without pasting a token:
+
+1. Create a [fine-grained personal access token](https://github.com/settings/tokens?type=beta) with **Actions: Read and write** on this repo only (no other permissions needed).
+2. In the repo: **Settings → Secrets and variables → Actions → New repository secret**
+3. Name: `REFRESH_DISPATCH_TOKEN`, value: your token
+4. Run **Actions → Refresh promotions data** once (or `./scripts/refresh_and_push.sh` with `REFRESH_DISPATCH_TOKEN` set locally)
+
+The workflow embeds the token in `docs/site-config.json` so the site can trigger refreshes. The token is visible in that public file — keep the PAT scoped to Actions on this repo only. The workflow also has concurrency limits to reduce duplicate runs.
+
+**Alternative:** **Actions** → **Refresh promotions data** → **Run workflow**, or `./scripts/refresh_and_push.sh` from your Mac.
 
 **Manual equivalent:**
 

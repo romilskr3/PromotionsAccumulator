@@ -1,5 +1,5 @@
 # Manual: Actions → Refresh promotions data → Run workflow.
-# Site: Refresh data button (token in site-config from REFRESH_DISPATCH_TOKEN secret)
+# Site Refresh button → Cloudflare Worker (REFRESH_API_URL) → this workflow
 
 name: Refresh promotions data
 
@@ -45,7 +45,7 @@ jobs:
 
       - name: Fetch promotions and update outputs
         env:
-          REFRESH_DISPATCH_TOKEN: ${{ secrets.REFRESH_DISPATCH_TOKEN }}
+          REFRESH_API_URL: ${{ vars.REFRESH_API_URL }}
         run: python3 scripts/update_promotions.py --refresh-leaflets
 
       - name: Verify Tesco Fresh 4 refreshed

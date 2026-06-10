@@ -52,20 +52,17 @@ def write_site_config(path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     cfg = site_config_dict()
 
-    existing_token = ""
+    existing_api_url = ""
     if path.is_file():
         try:
-            existing_token = json.loads(path.read_text(encoding="utf-8")).get(
-                "refreshDispatchToken", ""
-            )
+            existing = json.loads(path.read_text(encoding="utf-8"))
+            existing_api_url = str(existing.get("refreshApiUrl") or "").strip()
         except (json.JSONDecodeError, OSError):
-            existing_token = ""
+            existing_api_url = ""
 
-    token = os.environ.get("REFRESH_DISPATCH_TOKEN", "").strip() or str(
-        existing_token or ""
-    ).strip()
-    if token:
-        cfg["refreshDispatchToken"] = token
+    api_url = os.environ.get("REFRESH_API_URL", "").strip() or existing_api_url
+    if api_url:
+        cfg["refreshApiUrl"] = api_url.rstrip("/")
 
     path.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
     return path

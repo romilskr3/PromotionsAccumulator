@@ -947,7 +947,7 @@ SITE_HTML = r"""<!DOCTYPE html>
       owner: "romilskr3",
       repo: "PromotionsAccumulator",
       workflowFile: "refresh-promotions.yml",
-      refreshDispatchToken: "",
+      refreshApiUrl: "",
     };
 
     const tbody = document.getElementById("tbody");
@@ -1280,7 +1280,7 @@ SITE_HTML = r"""<!DOCTYPE html>
         if (cfg.owner) siteConfig.owner = cfg.owner;
         if (cfg.repo) siteConfig.repo = cfg.repo;
         if (cfg.workflowFile) siteConfig.workflowFile = cfg.workflowFile;
-        if (cfg.refreshDispatchToken) siteConfig.refreshDispatchToken = cfg.refreshDispatchToken;
+        if (cfg.refreshApiUrl) siteConfig.refreshApiUrl = cfg.refreshApiUrl.replace(/\/$/, "");
         if (cfg.favouriteKeywords && typeof cfg.favouriteKeywords === "object") {
           for (const category of ["vegetable", "fruit"]) {
             const values = cfg.favouriteKeywords[category];
@@ -1546,32 +1546,25 @@ SITE_HTML = r"""<!DOCTYPE html>
     }
 
     function canDispatchRefresh() {
-      return Boolean(siteConfig.refreshDispatchToken);
+      return Boolean(siteConfig.refreshApiUrl);
     }
 
-    function githubApiHeaders(includeAuth) {
-      const headers = {
+    function githubApiHeaders() {
+      return {
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
       };
-      if (includeAuth && siteConfig.refreshDispatchToken) {
-        headers.Authorization = `Bearer ${siteConfig.refreshDispatchToken}`;
-      }
-      return headers;
     }
 
     async function dispatchRefreshWorkflow() {
-      const res = await fetch(
-        `https://api.github.com/repos/${siteConfig.owner}/${siteConfig.repo}/actions/workflows/${siteConfig.workflowFile}/dispatches`,
-        {
-          method: "POST",
-          headers: githubApiHeaders(true),
-          body: JSON.stringify({ ref: "main" }),
-        }
-      );
-      if (res.status === 204) return;
-      const detail = await res.text();
-      throw new Error(`GitHub ${res.status}${detail ? `: ${detail.slice(0, 180)}` : ""}`);
+      const res = await fetch(siteConfig.refreshApiUrl, {
+        method: "POST",
+        mode: "cors",
+      });
+      if (!res.ok) {
+        const detail = await res.text();
+        throw new Error(`Refresh trigger ${res.status}${detail ? `: ${detail.slice(0, 180)}` : ""}`);
+      }
     }
 
     async function waitForWorkflowRun(afterMs) {
@@ -1581,7 +1574,7 @@ SITE_HTML = r"""<!DOCTYPE html>
 
       while (Date.now() - started < timeoutMs) {
         const res = await fetch(url, {
-          headers: githubApiHeaders(canDispatchRefresh()),
+          headers: githubApiHeaders(),
           cache: "no-store",
         });
         if (!res.ok) throw new Error(`GitHub ${res.status} while checking workflow`);
@@ -1654,7 +1647,7 @@ SITE_HTML = r"""<!DOCTYPE html>
           ? "Promotions updated."
           : canDispatchRefresh()
             ? "Refresh complete (CSV timestamp unchanged)."
-            : "Reloaded CSV (refresh trigger not configured yet).";
+            : "Reloaded CSV (set REFRESH_API_URL after deploying the refresh worker).";
       } catch (err) {
         refreshHint.textContent = `Refresh failed: ${err.message}`;
         metaEl.classList.add("error");

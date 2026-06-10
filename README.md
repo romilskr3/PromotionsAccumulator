@@ -36,18 +36,17 @@ This will:
 
 Then open the live site and click **Refresh data** (top right) to fetch new leaflets via GitHub Actions and load the updated CSV.
 
-### One-time: enable Refresh data for everyone
+### Enable Refresh data for everyone (one-time)
 
-GitHub requires authentication to start a workflow. To let **any visitor** click Refresh without pasting a token:
+GitHub blocks putting a PAT in the repo. Use a free **Cloudflare Worker** as a proxy — the token stays in Cloudflare, the site only stores the worker URL.
 
-1. Create a [fine-grained personal access token](https://github.com/settings/tokens?type=beta) with **Actions: Read and write** on this repo only (no other permissions needed).
-2. In the repo: **Settings → Secrets and variables → Actions → New repository secret**
-3. Name: `REFRESH_DISPATCH_TOKEN`, value: your token
-4. Run **Actions → Refresh promotions data** once (or `./scripts/refresh_and_push.sh` with `REFRESH_DISPATCH_TOKEN` set locally)
+1. Deploy the worker — see [`workers/refresh-trigger/README.md`](workers/refresh-trigger/README.md)
+2. Repo **Settings → Secrets and variables → Actions → Variables** → add `REFRESH_API_URL` = your worker URL (e.g. `https://promotions-accumulator-refresh….workers.dev`)
+3. Run **Actions → Refresh promotions data** once
 
-The workflow embeds the token in `docs/site-config.json` so the site can trigger refreshes. The token is visible in that public file — keep the PAT scoped to Actions on this repo only. The workflow also has concurrency limits to reduce duplicate runs.
+Anyone can then click **Refresh data** on the live site. You can delete the `REFRESH_DISPATCH_TOKEN` repo secret (no longer used).
 
-**Alternative:** **Actions** → **Refresh promotions data** → **Run workflow**, or `./scripts/refresh_and_push.sh` from your Mac.
+**Alternative:** run **Actions → Refresh promotions data** manually, or `./scripts/refresh_and_push.sh` from your Mac.
 
 **Manual equivalent:**
 

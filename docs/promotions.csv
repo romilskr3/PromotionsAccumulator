@@ -1,10 +1,16 @@
-# Generated: 2026-06-22T13:20+01:00
+# Generated: 2026-06-25T10:35+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Baby Potatoes,1 kg,€0.49,18/06,01/07,Live,True,vegetable,2026-06-18,2026-07-01
 Aldi,Flat Peaches,500 g,€1.29,18/06,01/07,Live,True,fruit,2026-06-18,2026-07-01
 Aldi,Joya Apples White Grapes,500 g,€0.99,18/06,01/07,Live,True,fruit,2026-06-18,2026-07-01
 Aldi,Red Onions,750 g,€0.49,18/06,01/07,Live,True,vegetable,2026-06-18,2026-07-01
 Aldi,Twin Peppers,2 pack,€0.99,18/06,01/07,Live,True,vegetable,2026-06-18,2026-07-01
+Aldi,Cherry on the Vine Tomatoes,300 g,€0.59,02/07,15/07,Upcoming,False,vegetable,2026-07-02,2026-07-15
+Aldi,Iceberg Lettuce,Each,€1.29,02/07,15/07,Upcoming,False,vegetable,2026-07-02,2026-07-15
+Aldi,Mango,Each,€0.59,02/07,15/07,Upcoming,False,fruit,2026-07-02,2026-07-15
+Aldi,Peaches,500 g,€1.29,02/07,15/07,Upcoming,False,fruit,2026-07-02,2026-07-15
+Aldi,PinKids Apples,5 pack,€0.99,02/07,15/07,Upcoming,False,fruit,2026-07-02,2026-07-15
+Aldi,Sweet Pointed Peppers,2 pack,€0.69,02/07,15/07,Upcoming,False,vegetable,2026-07-02,2026-07-15
 Aldi,Loose Ready to Eat Avocado,Each,€0.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Mango,Each,€0.59,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Microwaveable Baby Potatoes,400 g,€0.49,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20
@@ -23,17 +29,11 @@ Aldi,Joya Apples,6 pack,€1.49,04/06,17/06,Ended,False,fruit,2026-06-04,2026-06
 Aldi,Loose Avocado,Each,€0.79,04/06,17/06,Ended,False,fruit,2026-06-04,2026-06-17
 Aldi,Loose Red Pepper,Each,€0.49,04/06,17/06,Ended,False,vegetable,2026-06-04,2026-06-17
 Aldi,Salad Tomatoes,6 pack,€0.79,04/06,17/06,Ended,False,vegetable,2026-06-04,2026-06-17
-Lidl,Cyprus Potatoes,2 kg,€2.49,18/06,24/06,Live,True,vegetable,2026-06-18,2026-06-24
-Lidl,FARRELL'S Irish Butterhead Lettuce,1 piece,€0.59,18/06,24/06,Live,True,vegetable,2026-06-18,2026-06-24
-Lidl,Honeydew Melon,1 piece,€1.49,18/06,24/06,Live,True,fruit,2026-06-18,2026-06-24
-Lidl,Loose Pears,1 piece,€0.49,18/06,24/06,Live,True,fruit,2026-06-18,2026-06-24
-Lidl,Loose Vine Tomatoes,—,€1.99,18/06,24/06,Live,True,vegetable,2026-06-18,2026-06-24
-Lidl,Snack Peppers,200 g,€0.99,18/06,24/06,Live,True,vegetable,2026-06-18,2026-06-24
-Lidl,Cherry Tomatoes,250 g,€0.49,25/06,01/07,Upcoming,False,vegetable,2026-06-25,2026-07-01
-Lidl,Deluxe Salad Trio,1 piece,€0.99,25/06,01/07,Upcoming,False,vegetable,2026-06-25,2026-07-01
-Lidl,Golden Delicious Apples,6 pack,€0.99,25/06,01/07,Upcoming,False,fruit,2026-06-25,2026-07-01
-Lidl,Irish Chestnut Mushrooms,250 g,€0.69,25/06,01/07,Upcoming,False,vegetable,2026-06-25,2026-07-01
-Lidl,Microwaveable Baby Potatoes,400 g,€0.59,25/06,01/07,Upcoming,False,vegetable,2026-06-25,2026-07-01
+Lidl,Cherry Tomatoes,250 g,€0.49,25/06,01/07,Live,True,vegetable,2026-06-25,2026-07-01
+Lidl,Deluxe Salad Trio,1 piece,€0.99,25/06,01/07,Live,True,vegetable,2026-06-25,2026-07-01
+Lidl,Golden Delicious Apples,6 pack,€0.99,25/06,01/07,Live,True,fruit,2026-06-25,2026-07-01
+Lidl,Irish Chestnut Mushrooms,250 g,€0.69,25/06,01/07,Live,True,vegetable,2026-06-25,2026-07-01
+Lidl,Microwaveable Baby Potatoes,400 g,€0.59,25/06,01/07,Live,True,vegetable,2026-06-25,2026-07-01
 Lidl,Deluxe Baby Potatoes,750 g,€0.79,21/05,27/05,Ended,False,vegetable,2026-05-21,2026-05-27
 Lidl,Family Pack Mushrooms,433 g,€0.99,21/05,27/05,Ended,False,vegetable,2026-05-21,2026-05-27
 Lidl,Loose Red Apples,1 piece,€0.39,21/05,27/05,Ended,False,fruit,2026-05-21,2026-05-27
@@ -57,6 +57,12 @@ Lidl,Garden Cucumbers,750 g,€1.49,11/06,17/06,Ended,False,vegetable,2026-06-11
 Lidl,Irish Mushrooms,300 g,€0.69,11/06,17/06,Ended,False,vegetable,2026-06-11,2026-06-17
 Lidl,Loose Peaches,—,€2.99,11/06,17/06,Ended,False,fruit,2026-06-11,2026-06-17
 Lidl,Mixed Peppers,500 g,€1.19,11/06,17/06,Ended,False,vegetable,2026-06-11,2026-06-17
+Lidl,Cyprus Potatoes,2 kg,€2.49,18/06,24/06,Ended,False,vegetable,2026-06-18,2026-06-24
+Lidl,FARRELL'S Irish Butterhead Lettuce,1 piece,€0.59,18/06,24/06,Ended,False,vegetable,2026-06-18,2026-06-24
+Lidl,Honeydew Melon,1 piece,€1.49,18/06,24/06,Ended,False,fruit,2026-06-18,2026-06-24
+Lidl,Loose Pears,1 piece,€0.49,18/06,24/06,Ended,False,fruit,2026-06-18,2026-06-24
+Lidl,Loose Vine Tomatoes,—,€1.99,18/06,24/06,Ended,False,vegetable,2026-06-18,2026-06-24
+Lidl,Snack Peppers,200 g,€0.99,18/06,24/06,Ended,False,vegetable,2026-06-18,2026-06-24
 SuperValu,Baby Potatoes,1 kg,€0.79,21/05,03/06,Ended,False,vegetable,2026-05-21,2026-06-03
 SuperValu,Baby Potatoes,1 kg,€0.99,21/05,27/05,Ended,False,vegetable,2026-05-21,2026-05-27
 SuperValu,Extra Large Oranges,4 pack,€1.49,21/05,03/06,Ended,False,fruit,2026-05-21,2026-06-03

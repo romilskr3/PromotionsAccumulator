@@ -1,4 +1,4 @@
-# Generated: 2026-07-02T10:26+01:00
+# Generated: 2026-07-06T11:52+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Cherry on the Vine Tomatoes,300 g,€0.59,02/07,15/07,Live,True,vegetable,2026-07-02,2026-07-15
 Aldi,Iceberg Lettuce,Each,€1.29,02/07,15/07,Live,True,vegetable,2026-07-02,2026-07-15

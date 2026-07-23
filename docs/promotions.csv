@@ -1,9 +1,13 @@
-# Generated: 2026-07-20T10:28+01:00
+# Generated: 2026-07-23T09:40+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Irish White Potatoes,1 kg,€2.19,16/07,29/07,Live,True,vegetable,2026-07-16,2026-07-29
 Aldi,Joya Apples Loose Lemon,6 pack,€0.79,16/07,29/07,Live,True,fruit,2026-07-16,2026-07-29
 Aldi,Nectarines,500 g,€0.79,16/07,29/07,Live,True,fruit,2026-07-16,2026-07-29
 Aldi,Snack Bite Peppers,250 g,€0.29,16/07,29/07,Live,True,vegetable,2026-07-16,2026-07-29
+Aldi,Brown Onions,1 kg,€0.79,30/07,12/08,Upcoming,False,vegetable,2026-07-30,2026-08-12
+Aldi,Loose Ready To Eat Avocado,Each,€1.29,30/07,12/08,Upcoming,False,fruit,2026-07-30,2026-08-12
+Aldi,Pineapple,Each,€0.49,30/07,12/08,Upcoming,False,fruit,2026-07-30,2026-08-12
+Aldi,Spring Cabbage,Each,€0.49,30/07,12/08,Upcoming,False,vegetable,2026-07-30,2026-08-12
 Aldi,Loose Ready to Eat Avocado,Each,€0.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Mango,Each,€0.59,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Microwaveable Baby Potatoes,400 g,€0.49,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20

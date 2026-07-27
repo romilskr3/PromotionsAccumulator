@@ -1,4 +1,4 @@
-# Generated: 2026-07-23T09:40+01:00
+# Generated: 2026-07-27T11:03+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Irish White Potatoes,1 kg,€2.19,16/07,29/07,Live,True,vegetable,2026-07-16,2026-07-29
 Aldi,Joya Apples Loose Lemon,6 pack,€0.79,16/07,29/07,Live,True,fruit,2026-07-16,2026-07-29

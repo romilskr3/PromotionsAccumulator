@@ -1,13 +1,9 @@
-# Generated: 2026-07-27T11:03+01:00
+# Generated: 2026-07-30T09:39+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
-Aldi,Irish White Potatoes,1 kg,€2.19,16/07,29/07,Live,True,vegetable,2026-07-16,2026-07-29
-Aldi,Joya Apples Loose Lemon,6 pack,€0.79,16/07,29/07,Live,True,fruit,2026-07-16,2026-07-29
-Aldi,Nectarines,500 g,€0.79,16/07,29/07,Live,True,fruit,2026-07-16,2026-07-29
-Aldi,Snack Bite Peppers,250 g,€0.29,16/07,29/07,Live,True,vegetable,2026-07-16,2026-07-29
-Aldi,Brown Onions,1 kg,€0.79,30/07,12/08,Upcoming,False,vegetable,2026-07-30,2026-08-12
-Aldi,Loose Ready To Eat Avocado,Each,€1.29,30/07,12/08,Upcoming,False,fruit,2026-07-30,2026-08-12
-Aldi,Pineapple,Each,€0.49,30/07,12/08,Upcoming,False,fruit,2026-07-30,2026-08-12
-Aldi,Spring Cabbage,Each,€0.49,30/07,12/08,Upcoming,False,vegetable,2026-07-30,2026-08-12
+Aldi,Brown Onions,1 kg,€0.79,30/07,12/08,Live,True,vegetable,2026-07-30,2026-08-12
+Aldi,Loose Ready to Eat Avocado,Each,€1.29,30/07,12/08,Live,True,fruit,2026-07-30,2026-08-12
+Aldi,Pineapple,Each,€0.49,30/07,12/08,Live,True,fruit,2026-07-30,2026-08-12
+Aldi,Spring Cabbage,Each,€0.49,30/07,12/08,Live,True,vegetable,2026-07-30,2026-08-12
 Aldi,Loose Ready to Eat Avocado,Each,€0.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Mango,Each,€0.59,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Microwaveable Baby Potatoes,400 g,€0.49,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20
@@ -37,6 +33,10 @@ Aldi,Mango,Each,€0.59,02/07,15/07,Ended,False,fruit,2026-07-02,2026-07-15
 Aldi,Peaches,500 g,€1.29,02/07,15/07,Ended,False,fruit,2026-07-02,2026-07-15
 Aldi,PinKids Apples,5 pack,€0.99,02/07,15/07,Ended,False,fruit,2026-07-02,2026-07-15
 Aldi,Sweet Pointed Peppers,2 pack,€0.69,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
+Aldi,Irish White Potatoes,1 kg,€2.19,16/07,29/07,Ended,False,vegetable,2026-07-16,2026-07-29
+Aldi,Joya Apples Loose Lemon,6 pack,€0.79,16/07,29/07,Ended,False,fruit,2026-07-16,2026-07-29
+Aldi,Nectarines,500 g,€0.79,16/07,29/07,Ended,False,fruit,2026-07-16,2026-07-29
+Aldi,Snack Bite Peppers,250 g,€0.29,16/07,29/07,Ended,False,vegetable,2026-07-16,2026-07-29
 Lidl,Deluxe Baby Potatoes,750 g,€0.79,21/05,27/05,Ended,False,vegetable,2026-05-21,2026-05-27
 Lidl,Family Pack Mushrooms,433 g,€0.99,21/05,27/05,Ended,False,vegetable,2026-05-21,2026-05-27
 Lidl,Loose Red Apples,1 piece,€0.39,21/05,27/05,Ended,False,fruit,2026-05-21,2026-05-27
@@ -92,12 +92,9 @@ SuperValu,Tray Baker Potatoes,4 pack,€0.69,04/06,10/06,Ended,False,vegetable,2
 SuperValu,Peppers,3 pack,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Plum Punnet,500 g,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Red Onions,3 pack,€0.79,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
-Tesco,Green Peppers,Each,€0.79,11/06,29/07,Live,True,vegetable,2026-06-11,2026-07-29
-Tesco,Red Peppers,Each,€0.79,11/06,29/07,Live,True,vegetable,2026-06-11,2026-07-29
-Tesco,Yellow Peppers,Each,€0.79,11/06,29/07,Live,True,vegetable,2026-06-11,2026-07-29
-Tesco,Green Peppers,Each,€0.79,02/07,29/07,Live,True,vegetable,2026-07-02,2026-07-29
-Tesco,Red Peppers,Each,€0.79,02/07,29/07,Live,True,vegetable,2026-07-02,2026-07-29
-Tesco,Yellow Peppers,Each,€0.79,02/07,29/07,Live,True,vegetable,2026-07-02,2026-07-29
+Tesco,Family Pack Onions 1 Kilograms,—,€0.79,30/07,19/08,Live,True,vegetable,2026-07-30,2026-08-19
+Tesco,Ripe & Ready Avocado,—,€0.89,30/07,19/08,Live,True,fruit,2026-07-30,2026-08-19
+Tesco,Whole Cucumber,Each,€0.79,30/07,19/08,Live,True,vegetable,2026-07-30,2026-08-19
 Tesco,Dole Easypeelers,500 g,€0.74,07/05,03/06,Ended,False,fruit,2026-05-07,2026-06-03
 Tesco,Red Onion,750 g,€0.69,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
 Tesco,Salad Tomatoes,6 pack,€0.89,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
@@ -108,8 +105,14 @@ Tesco,Red Onion,750 g,€0.49,04/06,10/06,Ended,False,vegetable,2026-06-04,2026-
 Tesco,Red Peppers,Each,€0.69,04/06,10/06,Ended,False,vegetable,2026-06-04,2026-06-10
 Tesco,Ripe & Ready Avocado,—,€0.79,04/06,01/07,Ended,False,fruit,2026-06-04,2026-07-01
 Tesco,Yellow Peppers,Each,€0.69,04/06,10/06,Ended,False,vegetable,2026-06-04,2026-06-10
+Tesco,Green Peppers,Each,€0.79,11/06,29/07,Ended,False,vegetable,2026-06-11,2026-07-29
 Tesco,Green Peppers,Each,€0.79,11/06,01/07,Ended,False,vegetable,2026-06-11,2026-07-01
 Tesco,Lemons,Each,€0.22,11/06,01/07,Ended,False,vegetable,2026-06-11,2026-07-01
 Tesco,Red Onion,750 g,€0.69,11/06,01/07,Ended,False,vegetable,2026-06-11,2026-07-01
+Tesco,Red Peppers,Each,€0.79,11/06,29/07,Ended,False,vegetable,2026-06-11,2026-07-29
 Tesco,Red Peppers,Each,€0.79,11/06,01/07,Ended,False,vegetable,2026-06-11,2026-07-01
+Tesco,Yellow Peppers,Each,€0.79,11/06,29/07,Ended,False,vegetable,2026-06-11,2026-07-29
 Tesco,Yellow Peppers,Each,€0.79,11/06,01/07,Ended,False,vegetable,2026-06-11,2026-07-01
+Tesco,Green Peppers,Each,€0.79,02/07,29/07,Ended,False,vegetable,2026-07-02,2026-07-29
+Tesco,Red Peppers,Each,€0.79,02/07,29/07,Ended,False,vegetable,2026-07-02,2026-07-29
+Tesco,Yellow Peppers,Each,€0.79,02/07,29/07,Ended,False,vegetable,2026-07-02,2026-07-29

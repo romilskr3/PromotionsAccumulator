@@ -1,4 +1,4 @@
-# Generated: 2026-08-06T09:48+01:00
+# Generated: 2026-08-10T08:53+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Brown Onions,1 kg,€0.79,30/07,12/08,Live,True,vegetable,2026-07-30,2026-08-12
 Aldi,Loose Ready to Eat Avocado,Each,€1.29,30/07,12/08,Live,True,fruit,2026-07-30,2026-08-12

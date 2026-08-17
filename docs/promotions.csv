@@ -1,4 +1,4 @@
-# Generated: 2026-08-13T08:44+01:00
+# Generated: 2026-08-17T08:07+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Cherry Tomatoes,250 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26
 Aldi,Closed Cup Mushrooms,300 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26

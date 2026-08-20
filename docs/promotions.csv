@@ -1,4 +1,4 @@
-# Generated: 2026-08-17T08:07+01:00
+# Generated: 2026-08-20T07:56+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Cherry Tomatoes,250 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26
 Aldi,Closed Cup Mushrooms,300 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26
@@ -97,9 +97,6 @@ SuperValu,Tray Baker Potatoes,4 pack,€0.69,04/06,10/06,Ended,False,vegetable,2
 SuperValu,Peppers,3 pack,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Plum Punnet,500 g,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Red Onions,3 pack,€0.79,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
-Tesco,Family Pack Onions 1 Kilograms,—,€0.79,30/07,19/08,Live,True,vegetable,2026-07-30,2026-08-19
-Tesco,Ripe & Ready Avocado,—,€0.89,30/07,19/08,Live,True,fruit,2026-07-30,2026-08-19
-Tesco,Whole Cucumber,Each,€0.79,30/07,19/08,Live,True,vegetable,2026-07-30,2026-08-19
 Tesco,Dole Easypeelers,500 g,€0.74,07/05,03/06,Ended,False,fruit,2026-05-07,2026-06-03
 Tesco,Red Onion,750 g,€0.69,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
 Tesco,Salad Tomatoes,6 pack,€0.89,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
@@ -121,3 +118,6 @@ Tesco,Yellow Peppers,Each,€0.79,11/06,01/07,Ended,False,vegetable,2026-06-11,2
 Tesco,Green Peppers,Each,€0.79,02/07,29/07,Ended,False,vegetable,2026-07-02,2026-07-29
 Tesco,Red Peppers,Each,€0.79,02/07,29/07,Ended,False,vegetable,2026-07-02,2026-07-29
 Tesco,Yellow Peppers,Each,€0.79,02/07,29/07,Ended,False,vegetable,2026-07-02,2026-07-29
+Tesco,Family Pack Onions 1 Kilograms,—,€0.79,30/07,19/08,Ended,False,vegetable,2026-07-30,2026-08-19
+Tesco,Ripe & Ready Avocado,—,€0.89,30/07,19/08,Ended,False,fruit,2026-07-30,2026-08-19
+Tesco,Whole Cucumber,Each,€0.79,30/07,19/08,Ended,False,vegetable,2026-07-30,2026-08-19

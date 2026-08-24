@@ -1,10 +1,16 @@
-# Generated: 2026-08-20T07:56+01:00
+# Generated: 2026-08-24T08:11+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Cherry Tomatoes,250 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26
 Aldi,Closed Cup Mushrooms,300 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26
 Aldi,Joya Apples Mini,6 pack,€2.79,13/08,26/08,Live,True,fruit,2026-08-13,2026-08-26
 Aldi,Joya Apples Mini Apples,1 kg,€0.99,13/08,26/08,Live,True,fruit,2026-08-13,2026-08-26
 Aldi,Microwaveable Baby Potatoes,400 g,€0.49,13/08,26/08,Live,True,vegetable,2026-08-13,2026-08-26
+Aldi,Carrots,1 kg,€0.49,27/08,09/09,Upcoming,False,vegetable,2026-08-27,2026-09-09
+Aldi,Joya Apples Funsize Bananas,—,€1.99,27/08,09/09,Upcoming,False,fruit,2026-08-27,2026-09-09
+Aldi,Living Nature Butterhead Lettuce,Each,€0.99,27/08,09/09,Upcoming,False,vegetable,2026-08-27,2026-09-09
+Aldi,Loose Red Pepper,Each,€0.79,27/08,09/09,Upcoming,False,vegetable,2026-08-27,2026-09-09
+Aldi,PinKids Apples,5 pack,€0.99,27/08,09/09,Upcoming,False,fruit,2026-08-27,2026-09-09
+Aldi,Rooster Potatoes,1 kg,€1.49,27/08,09/09,Upcoming,False,vegetable,2026-08-27,2026-09-09
 Aldi,Loose Ready to Eat Avocado,Each,€0.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Mango,Each,€0.59,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Microwaveable Baby Potatoes,400 g,€0.49,07/05,20/05,Ended,False,vegetable,2026-05-07,2026-05-20
@@ -97,6 +103,8 @@ SuperValu,Tray Baker Potatoes,4 pack,€0.69,04/06,10/06,Ended,False,vegetable,2
 SuperValu,Peppers,3 pack,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Plum Punnet,500 g,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Red Onions,3 pack,€0.79,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
+Tesco,Fun-Sized Apples,6 pack,€0.65,20/08,02/09,Live,True,fruit,2026-08-20,2026-09-02
+Tesco,Fun-Sized Pears Min,7 pack,€0.79,20/08,02/09,Live,True,fruit,2026-08-20,2026-09-02
 Tesco,Dole Easypeelers,500 g,€0.74,07/05,03/06,Ended,False,fruit,2026-05-07,2026-06-03
 Tesco,Red Onion,750 g,€0.69,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
 Tesco,Salad Tomatoes,6 pack,€0.89,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03

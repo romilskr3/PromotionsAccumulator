@@ -1,4 +1,4 @@
-# Generated: 2026-09-28T14:33+01:00
+# Generated: 2026-10-01T13:55+01:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Crown Broccoli,350 g,€0.49,24/09,07/10,Live,True,vegetable,2026-09-24,2026-10-07
 Aldi,Garlic,4 pack,€0.59,24/09,07/10,Live,True,vegetable,2026-09-24,2026-10-07

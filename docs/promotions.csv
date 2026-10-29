@@ -1,4 +1,4 @@
-# Generated: 2026-10-26T14:05+00:00
+# Generated: 2026-10-29T14:04+00:00
 Supermarket,Product,Quantity,Price,From Date,Until Date,Status,Active today,category,from_sort,until_sort
 Aldi,Loose Ready to Eat Avocado,Each,€0.49,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
 Aldi,Mango,Each,€0.59,07/05,20/05,Ended,False,fruit,2026-05-07,2026-05-20
@@ -113,6 +113,7 @@ SuperValu,Peppers,3 pack,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,20
 SuperValu,Plum Punnet,500 g,€0.99,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 SuperValu,Red Onions,3 pack,€0.79,02/07,15/07,Ended,False,vegetable,2026-07-02,2026-07-15
 Tesco,Mild Onions,3 pack,€0.75,22/10,18/11,Live,True,vegetable,2026-10-22,2026-11-18
+Tesco,Oranges,4 pack,€0.69,22/10,18/11,Live,True,fruit,2026-10-22,2026-11-18
 Tesco,Dole Easypeelers,500 g,€0.74,07/05,03/06,Ended,False,fruit,2026-05-07,2026-06-03
 Tesco,Red Onion,750 g,€0.69,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
 Tesco,Salad Tomatoes,6 pack,€0.89,07/05,03/06,Ended,False,vegetable,2026-05-07,2026-06-03
